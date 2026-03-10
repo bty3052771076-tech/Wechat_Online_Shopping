@@ -1,0 +1,36 @@
+<view class="ship-page">
+  <view class="info-card">
+    <view class="order-no">订单号：{{orderNo}}</view>
+  </view>
+
+  <view class="form-section">
+    <view class="form-item" bind:tap="onCompanyTap">
+      <text class="form-label">快递公司</text>
+      <text class="form-value {{expressCompany ? '' : 'placeholder'}}">
+        {{expressCompany || '请选择快递公司'}}
+      </text>
+      <text class="arrow">></text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">运单号</text>
+      <input class="form-input" placeholder="请输入运单号" value="{{expressNo}}" bindinput="onExpressNoInput" />
+    </view>
+  </view>
+
+  <view class="submit-area">
+    <t-button theme="primary" block bind:tap="onSubmit">确认发货</t-button>
+  </view>
+
+  <t-picker
+    visible="{{showPicker}}"
+    value="{{[expressCompany]}}"
+    title="选择快递公司"
+    cancelBtn="取消"
+    confirmBtn="确认"
+    bind:confirm="onPickerConfirm"
+    bind:cancel="onPickerCancel"
+  >
+    <t-picker-item options="{{companyOptions}}" />
+  </t-picker>
+</view>

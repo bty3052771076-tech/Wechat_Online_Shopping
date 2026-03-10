@@ -1,0 +1,43 @@
+<view class="login-page">
+  <view class="login-header">
+    <image class="login-logo" src="https://tdesign.gtimg.com/miniprogram/template/retail/components-exp/avatar/avatar-1.jpg" mode="aspectFill" />
+    <text class="login-title">在线购物</text>
+    <text class="login-subtitle">欢迎登录</text>
+  </view>
+
+  <view class="login-form">
+    <t-input
+      label="用户名"
+      placeholder="请输入用户名"
+      value="{{username}}"
+      bind:change="onUsernameInput"
+    />
+    <t-input
+      label="密码"
+      placeholder="请输入密码"
+      type="password"
+      value="{{password}}"
+      bind:change="onPasswordInput"
+    />
+
+    <view class="login-btn-group">
+      <t-button theme="primary" block loading="{{loading}}" bind:tap="handleLogin">
+        登录
+      </t-button>
+      <view class="login-divider">
+        <view class="divider-line" />
+        <text class="divider-text">或</text>
+        <view class="divider-line" />
+      </view>
+      <t-button theme="light" block bind:tap="handleWechatLogin" icon="logo-wechat">
+        微信快捷登录
+      </t-button>
+    </view>
+
+    <view class="login-footer">
+      <text class="register-link" bind:tap="goRegister">没有账号？立即注册</text>
+    </view>
+  </view>
+
+  <t-toast id="t-toast" />
+</view>

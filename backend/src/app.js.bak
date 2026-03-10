@@ -1,0 +1,93 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+require('dotenv').config();
+
+// 导入路由
+const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
+const productRoutes = require('./routes/product');
+const cartRoutes = require('./routes/cart');
+
+// 导入数据库配置
+const sequelize = require('./config/database');
+
+// 导入模型关联
+require('./models');
+
+const app = express();
+
+// 安全中间件
+app.use(helmet());
+
+// CORS配置
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
+
+// 解析JSON请求体
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 请求日志中间件
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+// API路由
+app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+
+// 健康检查接口
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: 'connected'
+  });
+});
+
+// 404处理
+app.use((req, res) => {
+  res.status(404).json({
+    code: 'NotFound',
+    data: null,
+    msg: '接口不存在'
+  });
+});
+
+// 错误处理中间件
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+
+  res.status(err.status || 500).json({
+    code: 'ServerError',
+    data: null,
+    msg: err.message || '服务器内部错误'
+  });
+});
+
+// 启动服务器
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log('=================================');
+  console.log(`🚀 服务器启动成功`);
+  console.log(`📍 端口: ${PORT}`);
+  console.log(`🌍 环境: ${process.env.NODE_ENV}`);
+  console.log(`🔗 API地址: http://localhost:${PORT}`);
+  console.log('=================================');
+});
+
+// 优雅退出
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  await sequelize.close();
+  process.exit(0);
+});
+
+module.exports = app;

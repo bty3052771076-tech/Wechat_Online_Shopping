@@ -1,0 +1,65 @@
+<view class="user-detail-page" wx:if="{{user}}">
+  <!-- 用户基本信息 -->
+  <view class="profile-section">
+    <t-image src="{{user.avatarUrl}}" width="140rpx" height="140rpx" shape="round" mode="aspectFill" />
+    <view class="profile-info">
+      <text class="nick-name">{{user.nickName}}</text>
+      <text class="user-id">ID: {{user.id}}</text>
+    </view>
+  </view>
+
+  <!-- 详细信息 -->
+  <view class="section">
+    <t-cell-group>
+      <t-cell title="手机号" note="{{user.phoneNumber}}" />
+      <t-cell title="邮箱" note="{{user.email || '未绑定'}}" />
+      <t-cell title="注册时间" note="{{user.registerTime}}" />
+      <t-cell title="历史订单数" note="{{user.totalOrders}} 笔" />
+      <t-cell title="累计消费" note="¥{{user.totalSpent / 100}}" />
+    </t-cell-group>
+  </view>
+
+  <!-- 备注管理 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">用户备注</text>
+      <t-button wx:if="{{!editingRemark}}" size="extra-small" variant="outline" bind:tap="onEditRemark">编辑</t-button>
+    </view>
+    <view class="remark-area" wx:if="{{!editingRemark}}">
+      <text class="remark-text">{{user.remark || '暂无备注'}}</text>
+    </view>
+    <view class="remark-edit" wx:if="{{editingRemark}}">
+      <textarea class="remark-input" value="{{remarkValue}}" placeholder="输入备注信息" bindinput="onRemarkInput" maxlength="200" />
+      <view class="remark-actions">
+        <t-button size="small" bind:tap="onCancelRemark">取消</t-button>
+        <t-button size="small" theme="primary" bind:tap="onSaveRemark">保存</t-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史订单 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">历史订单</text>
+    </view>
+    <view class="order-history" wx:if="{{user.orderHistory.length > 0}}">
+      <view class="order-row" wx:for="{{user.orderHistory}}" wx:key="orderNo">
+        <view class="order-left">
+          <text class="order-no">{{item.orderNo}}</text>
+          <text class="order-time">{{item.createTime}}</text>
+        </view>
+        <view class="order-right">
+          <text class="order-amount">¥{{item.totalAmount / 100}}</text>
+          <text class="order-status">{{item.statusName}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-orders" wx:else>
+      <text>暂无历史订单</text>
+    </view>
+  </view>
+</view>
+
+<view class="empty-tip" wx:if="{{!user}}">
+  <text>用户不存在</text>
+</view>

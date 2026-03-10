@@ -1,0 +1,32 @@
+<view class="goods-edit-page">
+  <view class="form-section">
+    <t-input label="商品名称" placeholder="请输入商品名称" value="{{form.name}}" data-field="name" bind:change="onInput" disabled="{{readonly}}" />
+    <t-cell title="分类" note="{{form.category || '请选择'}}" arrow bind:click="onCategoryPicker" />
+    <t-input label="图片URL" placeholder="请输入商品图片地址" value="{{form.image}}" data-field="image" bind:change="onInput" disabled="{{readonly}}" />
+    <t-input label="规格" placeholder="请输入规格信息" value="{{form.spec}}" data-field="spec" bind:change="onInput" disabled="{{readonly}}" />
+    <t-input label="品牌" placeholder="请输入品牌" value="{{form.brand}}" data-field="brand" bind:change="onInput" disabled="{{readonly}}" />
+    <t-cell title="生产日期" note="{{form.productionDate || '请选择'}}" arrow bind:click="onDatePicker" />
+    <t-input label="保质期" placeholder="请输入保质期" value="{{form.shelfLife}}" data-field="shelfLife" bind:change="onInput" disabled="{{readonly}}" />
+    <t-input label="价格(元)" placeholder="请输入价格" type="digit" value="{{form.price}}" data-field="price" bind:change="onInput" disabled="{{readonly}}" />
+    <t-input label="库存" placeholder="请输入库存数量" type="number" value="{{form.stock}}" data-field="stock" bind:change="onInput" disabled="{{readonly}}" />
+  </view>
+
+  <view class="preview-section" wx:if="{{form.image}}">
+    <text class="preview-label">商品图片预览</text>
+    <image class="preview-image" src="{{form.image}}" mode="aspectFill" />
+  </view>
+
+  <view class="submit-bar" wx:if="{{!readonly}}">
+    <t-button theme="primary" block bind:tap="handleSubmit">
+      {{isEdit ? '保存修改' : '新增商品'}}
+    </t-button>
+  </view>
+
+  <t-picker visible="{{categoryVisible}}" value="{{[form.category]}}" title="选择分类" cancelBtn="取消" confirmBtn="确认" bind:change="onCategoryChange" bind:cancel="onCategoryCancel">
+    <t-picker-item options="{{categoryOptions}}" />
+  </t-picker>
+
+  <t-date-time-picker title="选择生产日期" visible="{{dateVisible}}" mode="date" value="{{form.productionDate}}" format="YYYY-MM-DD" bind:confirm="onDateChange" bind:cancel="onDateCancel" />
+
+  <t-toast id="t-toast" />
+</view>

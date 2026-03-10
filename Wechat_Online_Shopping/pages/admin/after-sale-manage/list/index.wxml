@@ -1,0 +1,35 @@
+<view class="after-sale-page">
+  <view class="tab-bar">
+    <t-tabs defaultValue="{{-1}}" bind:change="onTabChange" space-evenly="{{false}}">
+      <t-tab-panel wx:for="{{statusTabs}}" wx:key="key" label="{{item.text}}" value="{{item.key}}" />
+    </t-tabs>
+  </view>
+
+  <view class="list">
+    <view class="card" wx:for="{{afterSaleList}}" wx:key="id">
+      <view class="card-header">
+        <text class="as-id">{{item.id}}</text>
+        <text class="as-status {{item.status === 10 ? 'status-pending' : ''}}">{{item.statusName}}</text>
+      </view>
+      <view class="card-body">
+        <t-image src="{{item.goodsImage}}" width="120rpx" height="120rpx" mode="aspectFill" />
+        <view class="card-info">
+          <text class="goods-name">{{item.goodsName}}</text>
+          <text class="as-type">{{item.typeName}}</text>
+          <text class="as-reason">原因：{{item.reason}}</text>
+        </view>
+      </view>
+      <view class="card-footer">
+        <text class="user-info">{{item.userName}} | 订单：{{item.orderNo}}</text>
+        <text class="refund-amount">退款：¥{{item.refundAmount / 100}}</text>
+      </view>
+      <view class="card-actions">
+        <t-button size="extra-small" variant="outline" data-id="{{item.id}}" bind:tap="goDetail">查看详情</t-button>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-tip" wx:if="{{afterSaleList.length === 0}}">
+    <text>暂无售后记录</text>
+  </view>
+</view>

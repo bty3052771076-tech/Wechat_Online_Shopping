@@ -1,0 +1,49 @@
+<view class="btn-bar">
+  <view class="left">
+    <t-button
+      wx:for="{{buttonGroups.left}}"
+      wx:key="type"
+      wx:for-item="leftBtn"
+      size="extra-small"
+      shape="round"
+      t-class="{{isBtnMax ? 't-button--max':'t-button'}} order-btn delete-btn"
+      hover-class="order-btn--active"
+      catchtap="onOrderBtnTap"
+      data-type="{{leftBtn.type}}"
+    >
+      {{leftBtn.name}}
+    </t-button>
+  </view>
+  <view class="right">
+    <block wx:for="{{buttonGroups.right}}" wx:key="type" wx:for-item="rightBtn">
+      <t-button
+        wx:if="{{rightBtn.openType}}"
+        size="extra-small"
+        variant="{{ rightBtn.primary ? 'base' : 'outline'}}"
+        shape="round"
+        t-class="{{isBtnMax ? 't-button--max':'t-button'}} order-btn {{rightBtn.primary ? 'primary' : 'normal'}}"
+        hover-class="order-btn--active"
+        catchtap="onOrderBtnTap"
+        data-type="{{rightBtn.type}}"
+        open-type="{{ rightBtn.openType }}"
+        data-share="{{ rightBtn.dataShare }}"
+      >
+        {{rightBtn.name}}
+      </t-button>
+      <t-button
+        wx:else
+        size="extra-small"
+        variant="{{ rightBtn.primary ? 'base' : 'outline'}}"
+        shape="round"
+        t-class="{{isBtnMax ? 't-button--max':'t-button'}} order-btn {{rightBtn.primary ? 'primary' : 'normal'}}"
+        hover-class="order-btn--active"
+        catchtap="onOrderBtnTap"
+        data-type="{{rightBtn.type}}"
+      >
+        {{rightBtn.name}}
+      </t-button>
+    </block>
+  </view>
+</view>
+<t-toast id="t-toast" />
+<t-dialog id="t-dialog" />

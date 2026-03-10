@@ -1,0 +1,57 @@
+<view class="as-detail-page" wx:if="{{detail}}">
+  <!-- 状态区 -->
+  <view class="status-section">
+    <text class="status-text">{{detail.statusName}}</text>
+    <text class="as-type">{{detail.typeName}}</text>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="section">
+    <view class="section-title">商品信息</view>
+    <view class="goods-row">
+      <t-image src="{{detail.goodsImage}}" width="160rpx" height="160rpx" mode="aspectFill" />
+      <view class="goods-info">
+        <text class="goods-name">{{detail.goodsName}}</text>
+        <text class="refund-amount">退款金额：¥{{detail.refundAmount / 100}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 售后信息 -->
+  <view class="section">
+    <view class="section-title">售后信息</view>
+    <t-cell-group>
+      <t-cell title="售后单号" note="{{detail.id}}" />
+      <t-cell title="关联订单" note="{{detail.orderNo}}" />
+      <t-cell title="申请人" note="{{detail.userName}}" />
+      <t-cell title="申请时间" note="{{detail.createTime}}" />
+      <t-cell title="退款原因" note="{{detail.reason}}" />
+    </t-cell-group>
+  </view>
+
+  <!-- 凭证图片 -->
+  <view class="section" wx:if="{{detail.evidence.length > 0}}">
+    <view class="section-title">凭证图片</view>
+    <view class="evidence-list">
+      <t-image
+        wx:for="{{detail.evidence}}"
+        wx:key="*this"
+        src="{{item}}"
+        width="200rpx"
+        height="200rpx"
+        mode="aspectFill"
+        style="margin: 10rpx;"
+      />
+    </view>
+  </view>
+
+  <!-- 操作按钮（仅待审核状态显示） -->
+  <view class="action-bar" wx:if="{{detail.status === 10}}">
+    <t-button theme="danger" variant="outline" bind:tap="onReject" style="flex:1;margin-right:20rpx;">驳回</t-button>
+    <t-button theme="primary" bind:tap="onApprove" style="flex:1;">通过</t-button>
+  </view>
+</view>
+
+<view class="empty-tip" wx:if="{{!detail}}">
+  <text>售后单不存在</text>
+</view>

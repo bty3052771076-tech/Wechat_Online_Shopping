@@ -1,0 +1,39 @@
+<view class="user-manage-page">
+  <view class="search-bar">
+    <t-search
+      value="{{keyword}}"
+      placeholder="搜索用户昵称或手机号"
+      bind:change="onSearchChange"
+      bind:submit="onSearch"
+      bind:clear="onClear"
+    />
+  </view>
+
+  <view class="user-list">
+    <view class="user-card" wx:for="{{userList}}" wx:key="id" data-userid="{{item.id}}" bind:tap="goDetail">
+      <view class="user-avatar">
+        <t-image src="{{item.avatarUrl}}" width="100rpx" height="100rpx" shape="round" mode="aspectFill" />
+      </view>
+      <view class="user-info">
+        <view class="user-name-row">
+          <text class="nick-name">{{item.nickName}}</text>
+          <text class="remark-tag" wx:if="{{item.remark}}">{{item.remark}}</text>
+        </view>
+        <text class="phone">{{item.phoneNumber}}</text>
+        <view class="user-stats">
+          <text>订单 {{item.totalOrders}} 笔</text>
+          <text class="divider">|</text>
+          <text>消费 ¥{{item.totalSpent / 100}}</text>
+        </view>
+        <text class="register-time">注册时间：{{item.registerTime}}</text>
+      </view>
+      <view class="arrow-icon">
+        <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-tip" wx:if="{{userList.length === 0}}">
+    <text>暂无用户数据</text>
+  </view>
+</view>

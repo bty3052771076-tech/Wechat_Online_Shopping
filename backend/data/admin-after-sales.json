@@ -1,0 +1,36 @@
+[
+  {
+    "id": "AS20260303001",
+    "orderNo": "ORDER20260303001",
+    "userId": 1,
+    "userName": "测试用户",
+    "type": 10,
+    "typeName": "退货退款",
+    "status": 10,
+    "statusName": "待审核",
+    "reason": "商品有划痕",
+    "evidence": [
+      "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png"
+    ],
+    "refundAmount": 29900,
+    "createTime": "2026-03-03 11:00:00",
+    "goodsName": "不锈钢刀叉勺套装",
+    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png"
+  },
+  {
+    "id": "AS20260302002",
+    "orderNo": "ORDER20260302002",
+    "userId": 2,
+    "userName": "张三",
+    "type": 20,
+    "typeName": "仅退款",
+    "status": 50,
+    "statusName": "已完成",
+    "reason": "不想要了",
+    "evidence": [],
+    "refundAmount": 19800,
+    "createTime": "2026-03-02 18:00:00",
+    "goodsName": "白色短袖连衣裙",
+    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png"
+  }
+]

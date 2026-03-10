@@ -1,0 +1,76 @@
+.dashboard-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, #0052d9, #0073e6);
+  padding: 60rpx 40rpx 40rpx;
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+}
+
+.admin-text {
+  margin-left: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.admin-role {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4rpx;
+}
+
+.menu-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 24rpx;
+  gap: 20rpx;
+}
+
+.menu-item {
+  width: calc(50% - 10rpx);
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.menu-icon-wrap {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #e8f0fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.menu-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.menu-desc {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.logout-wrap {
+  padding: 40rpx;
+}

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "用户管理",
+  "usingComponents": {
+    "t-search": "tdesign-miniprogram/search/search",
+    "t-image": "tdesign-miniprogram/image/image",
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  }
+}

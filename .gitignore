@@ -1,0 +1,53 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Agent / local assistant state
+.claude/
+.qoder/
+MEMORY.md
+
+# Root / workspace logs
+*.log
+*.out
+*.err
+
+# Node dependencies
+node_modules/
+backend/node_modules/
+Wechat_Online_Shopping/node_modules/
+tools/weapp-dev-mcp/node_modules/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Backend runtime files
+backend/logs/
+backend/uploads/
+backend/runtime-server.err.log
+backend/runtime-server.out.log
+
+# WeChat local build/private config
+Wechat_Online_Shopping/miniprogram_npm/
+Wechat_Online_Shopping/project.private.config.json
+
+# MCP / local automation tools
+tools/weapp-dev-mcp/
+
+# Local planning / report artifacts
+docs/plans/
+docs/reports/
+docs/CONTEXT_RECOVERY_TOOLS.md
+
+# Optional local caches
+coverage/
+dist/
+tmp/
+temp/

@@ -1,0 +1,126 @@
+.delivery-page {
+  padding: 20rpx;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.page-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.area-list {
+  /* container */
+}
+
+.area-card {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.area-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.area-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.area-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.area-desc {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+}
+
+.area-fees {
+  display: flex;
+  gap: 40rpx;
+}
+
+.fee-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.fee-label {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.fee-value {
+  font-size: 30rpx;
+  color: #fa4126;
+  font-weight: bold;
+}
+
+.empty-tip {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+}
+
+/* 编辑弹窗 */
+.edit-panel {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 30rpx;
+}
+
+.edit-header {
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.edit-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.edit-form {
+  margin-bottom: 30rpx;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  width: 220rpx;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 20rpx;
+}

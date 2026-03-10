@@ -1,0 +1,23 @@
+[
+  {
+    "id": "area_001",
+    "areaName": "同城配送",
+    "description": "市区范围内配送",
+    "baseFee": 500,
+    "freeThreshold": 9900
+  },
+  {
+    "id": "area_002",
+    "areaName": "省内配送",
+    "description": "省内非同城区配送",
+    "baseFee": 800,
+    "freeThreshold": 19900
+  },
+  {
+    "id": "area_003",
+    "areaName": "全国配送",
+    "description": "跨省配送",
+    "baseFee": 1200,
+    "freeThreshold": 29900
+  }
+]

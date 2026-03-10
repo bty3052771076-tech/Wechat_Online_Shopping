@@ -1,0 +1,33 @@
+<view class="dashboard-page">
+  <view class="dashboard-header">
+    <view class="admin-info">
+      <t-icon name="user-circle" size="80rpx" color="#fff" />
+      <view class="admin-text">
+        <text class="admin-name">{{adminInfo.realName || '管理员'}}</text>
+        <text class="admin-role">{{adminInfo.role === 'super_admin' ? '超级管理员' : '工作人员'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-grid">
+    <view
+      class="menu-item"
+      wx:for="{{menuList}}"
+      wx:key="title"
+      data-url="{{item.url}}"
+      bind:tap="onMenuTap"
+    >
+      <view class="menu-icon-wrap">
+        <t-icon name="{{item.icon}}" size="56rpx" color="#0052d9" />
+      </view>
+      <text class="menu-title">{{item.title}}</text>
+      <text class="menu-desc">{{item.desc}}</text>
+    </view>
+  </view>
+
+  <view class="logout-wrap">
+    <t-button theme="danger" variant="outline" block bind:tap="handleLogout">
+      退出登录
+    </t-button>
+  </view>
+</view>

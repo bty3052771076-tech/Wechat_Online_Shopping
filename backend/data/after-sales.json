@@ -1,0 +1,230 @@
+[
+  {
+    "rightsNo": "AS1773055606388EHSP",
+    "orderNo": "ORDER1773054735187QFAADW",
+    "userId": 1,
+    "userName": "测试用户",
+    "storeId": "default-store",
+    "storeName": "默认店铺",
+    "rightsType": 20,
+    "rightsReasonType": 2,
+    "rightsReasonDesc": "商品有瑕疵",
+    "refundAmount": 2990,
+    "refundRequestAmount": 2990,
+    "rightsStatus": 10,
+    "createTime": "2026-03-09 19:26:46",
+    "refundMemo": "",
+    "rightsImageUrls": [],
+    "goodsItems": [
+      {
+        "skuId": "1",
+        "spuId": "1",
+        "goodsName": "新疆阿克苏苹果",
+        "goodsPictureUrl": "https://example.com/products/apple.jpg",
+        "specInfo": [
+          {
+            "specTitle": "size",
+            "specValues": "小果"
+          },
+          {
+            "specTitle": "weight",
+            "specValues": "2.5kg"
+          }
+        ],
+        "itemRefundAmount": 2990,
+        "rightsQuantity": 1
+      }
+    ],
+    "logisticsVO": {
+      "logisticsType": 1,
+      "logisticsNo": "",
+      "logisticsStatus": null,
+      "logisticsCompanyCode": "",
+      "logisticsCompanyName": "",
+      "receiverName": "Test User 1773054735159",
+      "receiverPhone": "13800138000",
+      "receiverProvince": "",
+      "receiverCity": "",
+      "receiverCountry": "",
+      "receiverArea": "",
+      "receiverAddress": "BeijingBeijingChaoyangTest Street 1773054735159",
+      "remark": "",
+      "nodes": []
+    },
+    "rightsRefund": {
+      "traceNo": "TRACEAS1773055606388EHSP",
+      "refundDesc": "商品有瑕疵",
+      "refundAmount": 2990
+    },
+    "id": "AS1773055606388EHSP",
+    "typeName": "仅退款",
+    "afterSaleRequireType": "REFUND_MONEY",
+    "goodsName": "新疆阿克苏苹果",
+    "goodsImage": "https://example.com/products/apple.jpg",
+    "buttonVOs": [
+      {
+        "name": "撤销申请",
+        "primary": false,
+        "type": 2
+      }
+    ],
+    "refundMethodList": [
+      {
+        "refundMethodName": "微信支付",
+        "refundMethodAmount": 2990
+      }
+    ],
+    "rightsStatusName": "待审核",
+    "userRightsStatus": 100,
+    "userRightsStatusName": "待商家审核",
+    "userRightsStatusDesc": "商家将在 24 小时内审核，请耐心等待"
+  },
+  {
+    "rightsNo": "AS20260303001",
+    "orderNo": "ORDER20260303001",
+    "userId": 1,
+    "userName": "测试用户",
+    "storeId": "default-store",
+    "storeName": "默认店铺",
+    "rightsType": 10,
+    "rightsReasonType": 2,
+    "rightsReasonDesc": "商品有划痕",
+    "refundAmount": 29900,
+    "refundRequestAmount": 29900,
+    "rightsStatus": 10,
+    "createTime": "2026-03-03 11:00:00",
+    "refundMemo": "收到商品后发现有划痕",
+    "rightsImageUrls": [
+      "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png"
+    ],
+    "goodsItems": [
+      {
+        "skuId": 1,
+        "spuId": 1,
+        "goodsName": "不锈钢刀叉勺套装",
+        "goodsPictureUrl": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png",
+        "specInfo": [
+          {
+            "specTitle": "规格",
+            "specValues": "四件套"
+          }
+        ],
+        "itemRefundAmount": 29900,
+        "rightsQuantity": 1
+      }
+    ],
+    "logisticsVO": {
+      "logisticsType": 1,
+      "logisticsNo": "",
+      "logisticsStatus": null,
+      "logisticsCompanyCode": "",
+      "logisticsCompanyName": "",
+      "receiverName": "测试用户",
+      "receiverPhone": "13800138000",
+      "receiverProvince": "",
+      "receiverCity": "",
+      "receiverCountry": "",
+      "receiverArea": "",
+      "receiverAddress": "深圳市南山区科技园",
+      "remark": "",
+      "nodes": []
+    },
+    "rightsRefund": {
+      "traceNo": "TRACE20260303001",
+      "refundDesc": "商品有划痕",
+      "refundAmount": 29900
+    },
+    "refundMethodList": [
+      {
+        "refundMethodName": "微信支付",
+        "refundMethodAmount": 29900
+      }
+    ],
+    "id": "AS20260303001",
+    "typeName": "退货退款",
+    "afterSaleRequireType": "REFUND_GOODS_MONEY",
+    "goodsName": "不锈钢刀叉勺套装",
+    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png",
+    "buttonVOs": [
+      {
+        "name": "撤销申请",
+        "primary": false,
+        "type": 2
+      }
+    ],
+    "rightsStatusName": "待审核",
+    "userRightsStatus": 100,
+    "userRightsStatusName": "待商家审核",
+    "userRightsStatusDesc": "商家将在 24 小时内审核，请耐心等待"
+  },
+  {
+    "rightsNo": "AS20260302002",
+    "orderNo": "ORDER20260302002",
+    "userId": 2,
+    "userName": "张三",
+    "storeId": "default-store",
+    "storeName": "默认店铺",
+    "rightsType": 20,
+    "rightsReasonType": 2,
+    "rightsReasonDesc": "不想要了",
+    "refundAmount": 19800,
+    "refundRequestAmount": 19800,
+    "rightsStatus": 50,
+    "createTime": "2026-03-02 18:00:00",
+    "refundMemo": "申请仅退款",
+    "rightsImageUrls": [],
+    "goodsItems": [
+      {
+        "skuId": 2,
+        "spuId": 2,
+        "goodsName": "白色短袖连衣裙",
+        "goodsPictureUrl": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png",
+        "specInfo": [
+          {
+            "specTitle": "颜色",
+            "specValues": "白色"
+          }
+        ],
+        "itemRefundAmount": 19800,
+        "rightsQuantity": 1
+      }
+    ],
+    "logisticsVO": {
+      "logisticsType": 1,
+      "logisticsNo": "",
+      "logisticsStatus": null,
+      "logisticsCompanyCode": "",
+      "logisticsCompanyName": "",
+      "receiverName": "张三",
+      "receiverPhone": "13900139000",
+      "receiverProvince": "",
+      "receiverCity": "",
+      "receiverCountry": "",
+      "receiverArea": "",
+      "receiverAddress": "北京市朝阳区测试路 1 号",
+      "remark": "",
+      "nodes": []
+    },
+    "rightsRefund": {
+      "traceNo": "TRACE20260302002",
+      "refundDesc": "退款成功",
+      "refundAmount": 19800
+    },
+    "refundMethodList": [
+      {
+        "refundMethodName": "微信支付",
+        "refundMethodAmount": 19800
+      }
+    ],
+    "id": "AS20260302002",
+    "typeName": "仅退款",
+    "afterSaleRequireType": "REFUND_MONEY",
+    "goodsName": "白色短袖连衣裙",
+    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png",
+    "buttonVOs": [],
+    "rightsStatusName": "已完成",
+    "userRightsStatus": 160,
+    "userRightsStatusName": "已退款",
+    "userRightsStatusDesc": "退款已原路返回，请注意查收"
+  }
+]

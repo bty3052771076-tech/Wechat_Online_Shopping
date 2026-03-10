@@ -1,0 +1,35 @@
+<view class="admin-login-page">
+  <view class="login-header">
+    <t-icon name="setting" size="120rpx" color="#0052d9" />
+    <text class="login-title">商家管理后台</text>
+    <text class="login-subtitle">工作人员登录</text>
+  </view>
+
+  <view class="login-form">
+    <t-input
+      label="账号"
+      placeholder="请输入工作人员账号"
+      value="{{username}}"
+      bind:input="onUsernameInput"
+    />
+    <t-input
+      label="密码"
+      placeholder="请输入密码"
+      type="password"
+      value="{{password}}"
+      bind:input="onPasswordInput"
+    />
+
+    <view class="login-btn-group">
+      <t-button theme="primary" block loading="{{loading}}" bind:tap="handleLogin">
+        登录
+      </t-button>
+    </view>
+
+    <view class="login-tip">
+      <text class="tip-text">测试账号：admin / admin123</text>
+    </view>
+  </view>
+
+  <t-toast id="t-toast" />
+</view>

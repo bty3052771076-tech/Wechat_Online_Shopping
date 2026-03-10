@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "管理后台",
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-button": "tdesign-miniprogram/button/button"
+  }
+}

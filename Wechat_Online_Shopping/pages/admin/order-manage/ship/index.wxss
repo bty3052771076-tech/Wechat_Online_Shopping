@@ -1,0 +1,63 @@
+.ship-page {
+  padding: 20rpx;
+}
+
+.info-card {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 30rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.order-no {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.form-section {
+  background: #fff;
+  border-radius: 12rpx;
+  margin-bottom: 30rpx;
+  overflow: hidden;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  width: 160rpx;
+  flex-shrink: 0;
+}
+
+.form-value {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.form-value.placeholder {
+  color: #bbb;
+}
+
+.arrow {
+  font-size: 28rpx;
+  color: #bbb;
+  margin-left: 10rpx;
+}
+
+.form-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.submit-area {
+  padding: 30rpx 0;
+}

@@ -1,0 +1,38 @@
+{
+  "name": "wechat-shop-backend",
+  "version": "1.0.0",
+  "description": "微信小程序在线购物后端API",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "wechat",
+    "shop",
+    "express",
+    "mysql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sequelize": "^6.32.1",
+    "mysql2": "^3.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "multer": "^1.4.5-lts.1",
+    "axios": "^1.5.0",
+    "moment": "^2.29.4",
+    "lodash": "^4.17.21",
+    "joi": "^17.10.2",
+    "winston": "^3.10.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

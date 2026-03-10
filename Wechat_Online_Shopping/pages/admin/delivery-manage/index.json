@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "配送管理",
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-popup": "tdesign-miniprogram/popup/popup"
+  }
+}

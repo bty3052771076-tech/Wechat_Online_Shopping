@@ -1,0 +1,42 @@
+<view class="goods-manage-page">
+  <view class="search-bar">
+    <t-search
+      value="{{keyword}}"
+      placeholder="搜索商品名称/品牌/分类"
+      bind:change="onSearchChange"
+      bind:submit="onSearch"
+      bind:clear="onClear"
+    />
+  </view>
+
+  <view class="action-bar">
+    <t-button theme="primary" size="small" icon="add" bind:tap="goAdd">新增商品</t-button>
+  </view>
+
+  <view class="goods-list" wx:if="{{goodsList.length > 0}}">
+    <view class="goods-item" wx:for="{{goodsList}}" wx:key="id">
+      <image class="goods-image" src="{{item.image}}" mode="aspectFill" />
+      <view class="goods-info">
+        <text class="goods-name">{{item.name}}</text>
+        <text class="goods-meta">{{item.category}} | {{item.brand}}</text>
+        <text class="goods-spec">规格: {{item.spec}}</text>
+        <view class="goods-bottom">
+          <text class="goods-price">¥{{item.price / 100}}</text>
+          <text class="goods-stock">库存: {{item.stock}}</text>
+        </view>
+      </view>
+      <view class="goods-actions">
+        <t-button size="extra-small" variant="outline" data-id="{{item.id}}" bind:tap="goDetail">详情</t-button>
+        <t-button size="extra-small" theme="primary" variant="outline" data-id="{{item.id}}" bind:tap="goEdit">修改</t-button>
+        <t-button size="extra-small" theme="danger" variant="outline" data-id="{{item.id}}" data-name="{{item.name}}" bind:tap="onDelete">删除</t-button>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-tip" wx:else>
+    <text>暂无商品数据</text>
+  </view>
+
+  <t-toast id="t-toast" />
+  <t-dialog id="t-dialog" />
+</view>
