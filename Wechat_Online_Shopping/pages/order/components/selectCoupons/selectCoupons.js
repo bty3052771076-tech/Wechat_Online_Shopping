@@ -1,11 +1,16 @@
 import dayjs from 'dayjs';
 import { couponsData } from './mock';
 
+const { normalizeCouponDialogStoreId } = require('../../../../services/_utils/page-contract-helpers');
+
 const emptyCouponImg = `https://tdesign.gtimg.com/miniprogram/template/retail/coupon/ordersure-coupon-newempty.png`;
 
 Component({
   properties: {
-    storeId: String,
+    storeId: {
+      type: String,
+      value: '',
+    },
     promotionGoodsList: {
       type: Array,
       value: [],
@@ -20,37 +25,29 @@ Component({
       observer(couponsShow) {
         if (couponsShow) {
           const { promotionGoodsList, orderSureCouponList, storeId } = this.data;
-          const products =
-            promotionGoodsList &&
-            promotionGoodsList.map((goods) => {
-              this.storeId = goods.storeId;
-              return {
-                skuId: goods.skuId,
-                spuId: goods.spuId,
-                storeId: goods.storeId,
-                selected: true,
-                quantity: goods.num,
-                prices: {
-                  sale: goods.settlePrice,
-                },
-              };
-            });
-          const selectedCoupons =
-            orderSureCouponList &&
-            orderSureCouponList.map((ele) => {
-              return {
-                promotionId: ele.promotionId,
-                storeId: ele.storeId,
-                couponId: ele.couponId,
-              };
-            });
+          const products = (promotionGoodsList || []).map((goods) => ({
+            skuId: goods.skuId,
+            spuId: goods.spuId,
+            storeId: normalizeCouponDialogStoreId(goods.storeId),
+            selected: true,
+            quantity: goods.num,
+            prices: {
+              sale: goods.settlePrice,
+            },
+          }));
+          const selectedCoupons = (orderSureCouponList || []).map((ele) => ({
+            promotionId: ele.promotionId,
+            storeId: normalizeCouponDialogStoreId(ele.storeId),
+            couponId: ele.couponId,
+          }));
+          this.storeId = normalizeCouponDialogStoreId(storeId || (products[0] && products[0].storeId));
           this.setData({
             products,
           });
           this.coupons({
             products,
             selectedCoupons,
-            storeId,
+            storeId: this.storeId,
           }).then((res) => {
             this.initData(res);
           });
@@ -63,8 +60,6 @@ Component({
     goodsList: [],
     selectedList: [],
     couponsList: [],
-    orderSureCouponList: [],
-    promotionGoodsList: [],
   },
   methods: {
     initData(data = {}) {
