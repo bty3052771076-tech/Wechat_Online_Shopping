@@ -13,6 +13,9 @@ const {
 } = require('../services/_utils/admin-adapters');
 const { DEFAULT_PRODUCT_IMAGE } = require('../services/_utils/catalog-adapters');
 
+const PRODUCT_APPLE_IMAGE = '/assets/images/products/apple.png';
+const DEFAULT_AVATAR_IMAGE = '/assets/images/avatar/default.png';
+
 test('adaptAdminGoodsListResponse maps backend products to admin goods cards', () => {
   const result = adaptAdminGoodsListResponse({
     code: 'Success',
@@ -214,7 +217,7 @@ test('adaptAdminOrderDetailResponse maps backend order detail to admin detail pa
   assert.equal(result.phone, '13800138000');
   assert.equal(result.address, '广东省深圳市南山区科技园 8 号');
   assert.equal(result.goodsList[0].spec, '小果');
-  assert.equal(result.goodsList[0].image, DEFAULT_PRODUCT_IMAGE);
+  assert.equal(result.goodsList[0].image, PRODUCT_APPLE_IMAGE);
   assert.equal(result.expressCompany, '顺丰速运');
   assert.equal(result.expressNo, 'SF123456');
 });
@@ -240,7 +243,7 @@ test('adaptAdminUsersListResponse maps backend users to admin list cards', () =>
     {
       id: 7,
       nickName: '测试用户',
-      avatarUrl: 'https://example.com/u.jpg',
+      avatarUrl: DEFAULT_AVATAR_IMAGE,
       phoneNumber: '13800138000',
       totalOrders: 3,
       totalSpent: 9950,
@@ -276,6 +279,7 @@ test('adaptAdminUserDetailResponse maps backend user detail to admin detail page
 
   assert.equal(result.id, 7);
   assert.equal(result.nickName, '测试用户');
+  assert.equal(result.avatarUrl, DEFAULT_AVATAR_IMAGE);
   assert.equal(result.totalSpent, 9950);
   assert.equal(result.orderHistory.length, 1);
   assert.equal(result.orderHistory[0].orderNo, 'ORDER123');

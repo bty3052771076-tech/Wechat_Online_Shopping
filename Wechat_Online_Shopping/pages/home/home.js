@@ -1,8 +1,11 @@
 import { fetchHome } from '../../services/home/home';
 import { fetchGoodsList } from '../../services/good/fetchGoodsList';
+import { fetchGood } from '../../services/good/fetchGood';
+import { addToCart } from '../../services/cart-new';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 const { buildHomeGoodsQuery } = require('../../services/_utils/home-adapters');
+const { buildCatalogAddCartPayload } = require('../../services/_utils/order-action-helpers');
 
 Page({
   data: {
@@ -130,12 +133,37 @@ Page({
     });
   },
 
-  goodListAddCartHandle() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '点击加入购物车',
+  async goodListAddCartHandle(e) {
+    const { index } = e.detail || {};
+    const goods = typeof index === 'number' ? this.data.goodsList[index] : e.detail && e.detail.goods;
+
+    if (!goods || !goods.spuId) {
+      return;
+    }
+
+    wx.showLoading({
+      title: '加入中',
+      mask: true,
     });
+
+    try {
+      const details = await fetchGood(goods.spuId);
+      const payload = buildCatalogAddCartPayload({ goods, details });
+
+      if (!payload.skuId) {
+        throw new Error('missing sku');
+      }
+
+      await addToCart(payload);
+    } catch (error) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '快捷加购失败，请进入详情页选择规格',
+      });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   navToSearchPage() {

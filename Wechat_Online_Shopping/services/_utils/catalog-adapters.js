@@ -1,5 +1,5 @@
 const { normalizeFenAmount } = require('./shop-adapters');
-const { DEFAULT_PRODUCT_IMAGE, normalizeImageUrl } = require('./image-helpers');
+const { DEFAULT_PRODUCT_IMAGE, IMAGE_SCENES, normalizeImageUrl, resolveCategoryImage } = require('./image-helpers');
 
 function splitTags(tags) {
   if (!tags) {
@@ -17,7 +17,7 @@ function splitTags(tags) {
 }
 
 function adaptProductItem(item = {}) {
-  const primaryImage = normalizeImageUrl(item.primary_image || item.primaryImage || '');
+  const primaryImage = normalizeImageUrl(item.primary_image || item.primaryImage || '', IMAGE_SCENES.product);
   const minSalePrice = normalizeFenAmount(item.min_sale_price || item.minSalePrice || 0);
   const maxLinePrice = normalizeFenAmount(item.max_line_price || item.maxLinePrice || 0);
 
@@ -52,7 +52,7 @@ function adaptCategoryNode(node = {}) {
   return {
     id: node.id,
     name: node.name || node.category_name || '',
-    thumbnail: normalizeImageUrl(node.thumbnail || node.icon_url || node.primary_image || ''),
+    thumbnail: resolveCategoryImage(node.thumbnail || node.icon_url || node.primary_image || '', node),
     disabled: Boolean(node.disabled),
     children,
   };

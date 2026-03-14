@@ -4,7 +4,13 @@ const ProductSpus = require('../models/ProductSpus');
 const ProductSkus = require('../models/ProductSkus');
 const Category = require('../models/Category');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
-const { normalizeImageUrl, normalizeImageList, normalizeCommentResources } = require('../utils/image');
+const {
+  IMAGE_SCENES,
+  normalizeImageUrl,
+  normalizeImageList,
+  normalizeCommentResources,
+  resolveCategoryImage,
+} = require('../utils/image');
 const {
   buildCommentTemplates,
   filterComments,
@@ -152,7 +158,7 @@ class ProductController {
 
         return {
           ...item,
-          primary_image: normalizeImageUrl(item.primary_image),
+          primary_image: normalizeImageUrl(item.primary_image, IMAGE_SCENES.product),
         };
       });
 
@@ -202,12 +208,12 @@ class ProductController {
 
       return successResponse(res, 200, '获取成功', {
         ...spu.toJSON(),
-        primary_image: normalizeImageUrl(spu.primary_image),
-        detail_images: normalizeImageList(detailImages),
+        primary_image: normalizeImageUrl(spu.primary_image, IMAGE_SCENES.product),
+        detail_images: normalizeImageList(detailImages, IMAGE_SCENES.product),
         skus: skus.map((sku) => ({
           ...sku.toJSON(),
           specs: parseSkuSpecs(sku.specs),
-          image: normalizeImageUrl(sku.image || spu.primary_image),
+          image: normalizeImageUrl(sku.image || spu.primary_image, IMAGE_SCENES.product),
         })),
       });
     } catch (error) {
@@ -232,7 +238,7 @@ class ProductController {
         '获取成功',
         categories.map((category) => ({
           ...category.toJSON(),
-          icon_url: normalizeImageUrl(category.icon_url),
+          icon_url: resolveCategoryImage(category.icon_url, category.toJSON()),
         })),
       );
     } catch (error) {
@@ -259,7 +265,7 @@ class ProductController {
             parent_id: category.parent_id,
             category_name: category.category_name,
             category_code: category.category_code,
-            icon_url: normalizeImageUrl(category.icon_url),
+            icon_url: resolveCategoryImage(category.icon_url, category.toJSON()),
             sort_order: category.sort_order,
             level: category.level,
             children: buildTree(category.id),

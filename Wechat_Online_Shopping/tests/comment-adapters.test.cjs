@@ -9,6 +9,8 @@ const {
   adaptGoodsDetailsCommentListResponse,
 } = require('../services/_utils/comment-adapters');
 
+const DEFAULT_COMMENT_IMAGE = '/assets/images/comments/proof.png';
+
 test('adaptCommentSummaryResponse maps backend summary to comment count cards', () => {
   const result = adaptCommentSummaryResponse({
     code: 'Success',
@@ -105,8 +107,5 @@ test('adaptCommentItem normalizes placeholder comment images', () => {
   });
 
   assert.equal(result.commentResources.length, 1);
-  assert.equal(
-    result.commentResources[0].src,
-    'https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png',
-  );
+  assert.equal(result.commentResources[0].src, DEFAULT_COMMENT_IMAGE);
 });

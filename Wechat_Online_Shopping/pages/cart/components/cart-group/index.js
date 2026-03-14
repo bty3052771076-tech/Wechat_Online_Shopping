@@ -39,7 +39,9 @@ Component({
   data: {
     shortageImg,
     isShowSpecs: false,
-    currentGoods: {},
+    currentGoods: {
+      thumb: '',
+    },
     isShowToggle: false,
     _storeGoods: [],
     _invalidGoodItems: [],

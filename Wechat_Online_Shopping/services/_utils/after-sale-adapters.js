@@ -1,4 +1,5 @@
 const { normalizeFenAmount, parseSpecInfo } = require('./shop-adapters');
+const { IMAGE_SCENES, normalizeImageUrl } = require('./image-helpers');
 
 function toLegacyTimestamp(value) {
   if (!value) {
@@ -27,7 +28,7 @@ function buildLegacyGoodsItem(item = {}) {
   return {
     actualPrice: normalizeFenAmount(item.itemRefundAmount || item.actualPrice || 0),
     goodsName: item.goodsName || '',
-    goodsPictureUrl: item.goodsPictureUrl || item.goodsImage || '',
+    goodsPictureUrl: normalizeImageUrl(item.goodsPictureUrl || item.goodsImage || '', IMAGE_SCENES.product),
     itemRefundAmount: normalizeFenAmount(item.itemRefundAmount || 0),
     rightsQuantity: Number(item.rightsQuantity || 1),
     skuId: item.skuId,
@@ -73,7 +74,9 @@ function buildLegacyRightsRecord(record = {}) {
       userRightsStatusDesc: record.userRightsStatusDesc || '',
       userRightsStatusName: record.userRightsStatusName || '',
       afterSaleRequireType: record.afterSaleRequireType || 'REFUND_MONEY',
-      rightsImageUrls: Array.isArray(record.rightsImageUrls) ? record.rightsImageUrls : [],
+      rightsImageUrls: (Array.isArray(record.rightsImageUrls) ? record.rightsImageUrls : []).map((item) =>
+        normalizeImageUrl(item, IMAGE_SCENES.comment),
+      ),
     },
     rightsItem: goodsItems.map(buildLegacyGoodsItem),
     rightsRefund: {
@@ -168,7 +171,7 @@ function buildAfterSalePreviewResponse(response = {}) {
       ...payload,
       goodsInfo: {
         goodsName: goodsInfo.goodsName || '',
-        skuImage: goodsInfo.skuImage || '',
+        skuImage: normalizeImageUrl(goodsInfo.skuImage || '', IMAGE_SCENES.product),
         specInfo: parseSpecInfo(goodsInfo.specInfo),
       },
     },

@@ -1,10 +1,7 @@
 const HOME_SWIPER_IMAGES = [
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner1.png',
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner2.png',
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner3.png',
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner4.png',
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner5.png',
-  'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner6.png',
+  '/assets/images/banners/spring-sale.png',
+  '/assets/images/banners/new-user.png',
+  '/assets/images/banners/featured.png',
 ];
 
 function getCategoryName(category = {}) {

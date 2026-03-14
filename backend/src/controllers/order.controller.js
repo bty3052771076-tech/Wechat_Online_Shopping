@@ -1,6 +1,6 @@
 const { Order, OrderItem, UserAddress, ProductSkus, ProductSpus, ShoppingCart, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
-const { normalizeImageUrl } = require('../utils/image');
+const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
 
 function formatSkuSpecInfo(specs) {
   if (!specs) {
@@ -89,7 +89,7 @@ class OrderController {
           price: sku.price,
           total_amount: itemTotal,
           product_title: sku.spu.title,
-          product_image: normalizeImageUrl(sku.spu.primary_image),
+          product_image: normalizeImageUrl(sku.spu.primary_image, IMAGE_SCENES.product),
           sku_spec_info: formatSkuSpecInfo(sku.specs),
         });
       }
@@ -190,7 +190,7 @@ class OrderController {
         if (orderData.items && orderData.items.length > 0) {
           orderData.previewItem = {
             ...orderData.items[0],
-            product_image: normalizeImageUrl(orderData.items[0].product_image),
+            product_image: normalizeImageUrl(orderData.items[0].product_image, IMAGE_SCENES.product),
           };
           delete orderData.items;
         }
@@ -237,7 +237,7 @@ class OrderController {
         ...orderData,
         items: (Array.isArray(orderData.items) ? orderData.items : []).map((item) => ({
           ...item,
-          product_image: normalizeImageUrl(item.product_image),
+          product_image: normalizeImageUrl(item.product_image, IMAGE_SCENES.product),
         })),
       });
     } catch (error) {

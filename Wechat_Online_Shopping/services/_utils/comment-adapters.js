@@ -1,6 +1,6 @@
-const DEFAULT_COMMENT_AVATAR =
-  'https://tdesign.gtimg.com/miniprogram/template/retail/avatar/avatar1.png';
-const { normalizeImageUrl } = require('./image-helpers');
+const { DEFAULT_AVATAR_IMAGE, IMAGE_SCENES, normalizeImageUrl } = require('./image-helpers');
+
+const DEFAULT_COMMENT_AVATAR = DEFAULT_AVATAR_IMAGE;
 
 function toNumber(value, fallback = 0) {
   const number = Number(value);
@@ -16,13 +16,13 @@ function normalizeCommentResources(resources = []) {
 
       if (typeof resource === 'string') {
         return {
-          src: normalizeImageUrl(resource),
+          src: normalizeImageUrl(resource, IMAGE_SCENES.comment),
           type: 'image',
         };
       }
 
       return {
-        src: normalizeImageUrl(resource.src || resource.url || ''),
+        src: normalizeImageUrl(resource.src || resource.url || '', IMAGE_SCENES.comment),
         type: resource.type || 'image',
       };
     })
@@ -80,7 +80,9 @@ function adaptCommentItem(item = {}) {
     commentScore: toNumber(item.commentScore, 0),
     uid: item.uid || '',
     userName: item.isAnonymity ? '匿名用户' : item.userName || '',
-    userHeadUrl: item.isAnonymity ? DEFAULT_COMMENT_AVATAR : item.userHeadUrl || DEFAULT_COMMENT_AVATAR,
+    userHeadUrl: item.isAnonymity
+      ? DEFAULT_COMMENT_AVATAR
+      : normalizeImageUrl(item.userHeadUrl || '', IMAGE_SCENES.avatar) || DEFAULT_COMMENT_AVATAR,
     isAnonymity: Boolean(item.isAnonymity),
     commentTime: item.commentTime ? String(item.commentTime) : '',
     isAutoComment: Boolean(item.isAutoComment),

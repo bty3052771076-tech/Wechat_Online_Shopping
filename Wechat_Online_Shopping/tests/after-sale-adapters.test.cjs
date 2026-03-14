@@ -10,6 +10,9 @@ const {
   buildAfterSaleReasonResponse,
 } = require('../services/_utils/after-sale-adapters');
 
+const DEFAULT_PRODUCT_IMAGE = '/assets/images/products/default.png';
+const DEFAULT_COMMENT_IMAGE = '/assets/images/comments/proof.png';
+
 test('adaptRightsListResponse maps backend after-sales list to legacy page payload', () => {
   const response = {
     code: 'Success',
@@ -87,6 +90,8 @@ test('adaptRightsListResponse maps backend after-sales list to legacy page paylo
   assert.equal(result.data.dataList[0].rightsItem[0].goodsName, '测试商品');
   assert.equal(result.data.dataList[0].rightsItem[0].specInfo[0].specValues, '黑色');
   assert.equal(result.data.dataList[0].rightsItem[0].rightsQuantity, 1);
+  assert.equal(result.data.dataList[0].rightsItem[0].goodsPictureUrl, DEFAULT_PRODUCT_IMAGE);
+  assert.deepEqual(result.data.dataList[0].rights.rightsImageUrls, [DEFAULT_COMMENT_IMAGE]);
   assert.match(String(result.data.dataList[0].rights.createTime), /^\d+$/);
   assert.equal(result.data.dataList[0].logisticsVO.receiverName, '张三');
 });
@@ -168,6 +173,7 @@ test('buildAfterSalePreviewResponse maps backend preview to legacy apply-service
   assert.equal(result.data.spuId, 88);
   assert.equal(result.data.goodsInfo.goodsName, '测试商品');
   assert.equal(result.data.goodsInfo.specInfo.length, 2);
+  assert.equal(result.data.goodsInfo.skuImage, DEFAULT_PRODUCT_IMAGE);
   assert.equal(result.data.refundableAmount, 2990);
 });
 

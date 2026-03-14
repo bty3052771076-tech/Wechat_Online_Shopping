@@ -1,4 +1,5 @@
 const { readJson, writeJson } = require('./json-store');
+const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
 
 const AFTER_SALE_FILE = 'after-sales.json';
 
@@ -227,7 +228,10 @@ function hydrateRecord(record = {}) {
     nodes: [],
     ...(record.logisticsVO || {}),
   };
-  const goodsItems = Array.isArray(record.goodsItems) ? record.goodsItems : [];
+  const goodsItems = (Array.isArray(record.goodsItems) ? record.goodsItems : []).map((item) => ({
+    ...item,
+    goodsPictureUrl: normalizeImageUrl(item.goodsPictureUrl || item.goodsImage || '', IMAGE_SCENES.product),
+  }));
   const refundAmount = parseNumber(record.refundAmount, parseNumber(record.refundRequestAmount));
   const refundRequestAmount = parseNumber(record.refundRequestAmount, refundAmount);
   const rightsNo = record.rightsNo || record.id || '';
@@ -242,7 +246,7 @@ function hydrateRecord(record = {}) {
     refundAmount,
     refundRequestAmount,
     goodsName: record.goodsName || (goodsItems[0] && goodsItems[0].goodsName) || '',
-    goodsImage: record.goodsImage || (goodsItems[0] && goodsItems[0].goodsPictureUrl) || '',
+    goodsImage: normalizeImageUrl(record.goodsImage || (goodsItems[0] && goodsItems[0].goodsPictureUrl) || '', IMAGE_SCENES.product),
     logisticsVO,
     goodsItems,
     buttonVOs: buildButtonVOs({ ...record, logisticsVO }),
@@ -255,6 +259,9 @@ function hydrateRecord(record = {}) {
       refundAmount,
       ...(record.rightsRefund || {}),
     },
+    rightsImageUrls: (Array.isArray(record.rightsImageUrls) ? record.rightsImageUrls : []).map((item) =>
+      normalizeImageUrl(item, IMAGE_SCENES.comment),
+    ),
     ...statusMeta,
   };
 }

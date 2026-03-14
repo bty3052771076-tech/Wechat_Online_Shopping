@@ -14,6 +14,8 @@ const {
   pickDefaultAddress,
 } = require('../services/_utils/shop-adapters');
 
+const PRODUCT_APPLE_IMAGE = '/assets/images/products/apple.png';
+
 test('adaptCartListResponse maps backend cart payload to cart page shape', () => {
   const response = {
     code: 'Success',
@@ -60,6 +62,8 @@ test('adaptCartListResponse maps backend cart payload to cart page shape', () =>
     { specTitle: 'color', specValue: '曜石黑' },
     { specTitle: 'size', specValue: '256G' },
   ]);
+  assert.equal(result.data.storeGoods[0].promotionGoodsList[0].goodsPromotionList[0].thumb, PRODUCT_APPLE_IMAGE);
+  assert.equal(result.data.storeGoods[0].promotionGoodsList[0].goodsPromotionList[0].primaryImage, PRODUCT_APPLE_IMAGE);
   assert.equal(result.data.selectedGoodsCount, 2);
   assert.equal(result.data.totalAmount, 39900);
   assert.equal(result.data.isAllSelected, true);
@@ -228,6 +232,7 @@ test('adaptOrderListResponse maps backend orders to legacy order-list shape', ()
   assert.equal(result.data.orders[0].orderStatus, 5);
   assert.equal(result.data.orders[0].paymentAmount, 2990);
   assert.equal(result.data.orders[0].orderItemVOs[0].actualPrice, 2990);
+  assert.equal(result.data.orders[0].orderItemVOs[0].goodsPictureUrl, PRODUCT_APPLE_IMAGE);
   assert.deepEqual(result.data.orders[0].buttonVOs.map((button) => button.type), [2, 1]);
 });
 
@@ -295,6 +300,7 @@ test('adaptOrderDetailResponse maps backend order detail to legacy detail shape'
   assert.equal(result.data.logisticsVO.receiverName, '张三');
   assert.equal(result.data.logisticsVO.logisticsNo, 'SF123456');
   assert.equal(result.data.orderItemVOs[0].actualPrice, 2990);
+  assert.equal(result.data.orderItemVOs[0].goodsPictureUrl, PRODUCT_APPLE_IMAGE);
   assert.deepEqual(result.data.buttonVOs.map((button) => button.type), [3]);
 });
 

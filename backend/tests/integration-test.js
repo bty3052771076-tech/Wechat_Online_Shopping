@@ -1,594 +1,590 @@
-/**
- * API集成测试脚本
- * 全面测试所有API端点的功能
- * 测试范围：用户认证、管理员认证、商品、购物车、收货地址、订单、管理端功能
- */
-
+const test = require('node:test');
+const assert = require('node:assert/strict');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
-const API_BASE = 'http://localhost:3001';
+const tempDataDir = path.join(__dirname, '.tmp-integration-data');
+process.env.ADMIN_DATA_DIR = tempDataDir;
+fs.rmSync(tempDataDir, { recursive: true, force: true });
 
-// 测试凭证
-const TEST_USER = {
-  username: 'testuser',
-  password: '123456'
-};
+const { startServer } = require('../src/app');
 
-const TEST_ADMIN = {
-  username: 'admin',
-  password: 'admin123'
-};
+let server;
+let api;
 
-// 颜色输出
-const colors = {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[36m',
-  cyan: '\x1b[36m',
-  magenta: '\x1b[35m'
-};
-
-function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
-}
-
-function logSection(title) {
-  console.log('\n' + '='.repeat(60));
-  log(title, 'cyan');
-  console.log('='.repeat(60));
-}
-
-function logSuccess(message) {
-  log(`✅ ${message}`, 'green');
-}
-
-function logError(message) {
-  log(`❌ ${message}`, 'red');
-}
-
-function logInfo(message) {
-  log(`ℹ️  ${message}`, 'yellow');
-}
-
-// 测试结果统计
-const results = {
-  passed: 0,
-  failed: 0,
-  tests: [],
-  sections: []
-};
-
-// 辅助测试函数
-async function test(name, testFn) {
-  try {
-    await testFn();
-    results.passed++;
-    results.tests.push({ name, status: 'PASSED' });
-    logSuccess(name);
-    return true;
-  } catch (error) {
-    results.failed++;
-    results.tests.push({ name, status: 'FAILED', error: error.message });
-    logError(`${name} - ${error.message}`);
-    return false;
-  }
-}
-
-// ========================================
-// 1. 用户认证测试 (3个)
-// ========================================
-async function testUserAuth() {
-  logSection('=== 用户认证测试 ===');
-
-  let userToken;
-
-  await test('用户登录（testuser/123456）', async () => {
-    const response = await axios.post(`${API_BASE}/api/users/login`, {
-      username: TEST_USER.username,
-      password: TEST_USER.password
-    });
-
-    if (response.data.code !== 'Success') throw new Error('登录失败');
-    if (!response.data.data.token) throw new Error('未返回token');
-    if (!response.data.data.user) throw new Error('未返回用户信息');
-
-    userToken = response.data.data.token;
-    logInfo(`用户: ${response.data.data.user.username}`);
-    logInfo(`Token: ${userToken.substring(0, 20)}...`);
+test.before(async () => {
+  server = await new Promise((resolve, reject) => {
+    const instance = startServer(0);
+    instance.once('listening', () => resolve(instance));
+    instance.once('error', reject);
   });
 
-  await test('获取用户信息', async () => {
-    const response = await axios.get(`${API_BASE}/api/users/profile`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取用户信息失败');
-    if (!response.data.data.id) throw new Error('缺少用户ID');
-    if (response.data.data.password) throw new Error('不应返回密码字段');
-
-    logInfo(`用户信息: ${response.data.data.username} - ${response.data.data.nickname || '无昵称'}`);
+  const { port } = server.address();
+  api = axios.create({
+    baseURL: `http://127.0.0.1:${port}`,
+    timeout: 15000,
+    validateStatus: () => true,
   });
-
-  await test('验证token有效性', async () => {
-    // 通过再次获取用户信息来验证token
-    const response = await axios.get(`${API_BASE}/api/users/profile`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('token验证失败');
-    logInfo('Token有效');
-  });
-
-  return userToken;
-}
-
-// ========================================
-// 2. 管理员认证测试 (2个)
-// ========================================
-async function testAdminAuth() {
-  logSection('=== 管理员认证测试 ===');
-
-  let adminToken;
-
-  await test('管理员登录（admin/admin123）', async () => {
-    const response = await axios.post(`${API_BASE}/api/admin/login`, {
-      username: TEST_ADMIN.username,
-      password: TEST_ADMIN.password
-    });
-
-    if (response.data.code !== 'Success') throw new Error('管理员登录失败');
-    if (!response.data.data.token) throw new Error('未返回token');
-    if (!response.data.data.adminInfo) throw new Error('未返回管理员信息');
-
-    adminToken = response.data.data.token;
-    logInfo(`管理员: ${response.data.data.adminInfo.username} (${response.data.data.adminInfo.role})`);
-    logInfo(`Token: ${adminToken.substring(0, 20)}...`);
-  });
-
-  await test('获取管理员信息', async () => {
-    const response = await axios.get(`${API_BASE}/api/admin/profile`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取管理员信息失败');
-    if (!response.data.data.id) throw new Error('缺少管理员ID');
-
-    logInfo(`管理员信息: ${response.data.data.username} - ${response.data.data.real_name || '无姓名'}`);
-  });
-
-  return adminToken;
-}
-
-// ========================================
-// 3. 商品API测试 (4个)
-// ========================================
-async function testProductAPI() {
-  logSection('=== 商品API测试 ===');
-
-  let productId;
-
-  await test('获取商品列表', async () => {
-    const response = await axios.get(`${API_BASE}/api/products/list`, {
-      params: { page: 1, pageSize: 10 }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取商品列表失败');
-    if (!response.data.data.list) throw new Error('缺少商品列表数据');
-    if (!response.data.data.pagination) throw new Error('缺少分页信息');
-
-    logInfo(`商品数量: ${response.data.data.list.length}`);
-    if (response.data.data.list.length > 0) {
-      productId = response.data.data.list[0].id;
-      logInfo(`第一个商品ID: ${productId}`);
-    }
-  });
-
-  await test('获取商品详情', async () => {
-    if (!productId) {
-      // 如果没有商品，使用默认ID
-      productId = 1;
-    }
-
-    const response = await axios.get(`${API_BASE}/api/products/detail/${productId}`);
-
-    if (response.data.code !== 'Success') throw new Error('获取商品详情失败');
-    if (!response.data.data.id) throw new Error('缺少商品ID');
-    if (!response.data.data.name) throw new Error('缺少商品名称');
-
-    logInfo(`商品详情: ${response.data.data.name} - ¥${response.data.data.price}`);
-  });
-
-  await test('获取分类列表', async () => {
-    const response = await axios.get(`${API_BASE}/api/products/categories/list`);
-
-    if (response.data.code !== 'Success') throw new Error('获取分类列表失败');
-    if (!Array.isArray(response.data.data)) throw new Error('分类列表应为数组');
-
-    logInfo(`分类数量: ${response.data.data.length}`);
-  });
-
-  await test('获取分类树', async () => {
-    const response = await axios.get(`${API_BASE}/api/products/categories/tree`);
-
-    if (response.data.code !== 'Success') throw new Error('获取分类树失败');
-    if (!Array.isArray(response.data.data)) throw new Error('分类树应为数组');
-
-    logInfo(`分类树层级: ${JSON.stringify(response.data.data).substring(0, 100)}...`);
-  });
-}
-
-// ========================================
-// 4. 购物车API测试 (4个)
-// ========================================
-async function testCartAPI(userToken) {
-  logSection('=== 购物车API测试 ===');
-
-  let cartItemId;
-
-  await test('加入购物车', async () => {
-    const response = await axios.post(`${API_BASE}/api/cart/add`, {
-      product_id: 1,
-      quantity: 2
-    }, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('加入购物车失败');
-    if (!response.data.data.id) throw new Error('缺少购物车项ID');
-
-    cartItemId = response.data.data.id;
-    logInfo(`购物车项ID: ${cartItemId}`);
-  });
-
-  await test('获取购物车列表', async () => {
-    const response = await axios.get(`${API_BASE}/api/cart/list`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取购物车列表失败');
-    if (!Array.isArray(response.data.data)) throw new Error('购物车列表应为数组');
-
-    logInfo(`购物车商品数量: ${response.data.data.length}`);
-  });
-
-  await test('修改购物车', async () => {
-    if (!cartItemId) {
-      logInfo('没有购物车项可修改，跳过');
-      return;
-    }
-
-    const response = await axios.put(`${API_BASE}/api/cart/update`, {
-      id: cartItemId,
-      quantity: 3
-    }, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('修改购物车失败');
-    if (response.data.data.quantity !== 3) throw new Error('数量未更新');
-
-    logInfo(`修改后数量: ${response.data.data.quantity}`);
-  });
-
-  await test('删除购物车商品', async () => {
-    if (!cartItemId) {
-      logInfo('没有购物车项可删除，跳过');
-      return;
-    }
-
-    const response = await axios.delete(`${API_BASE}/api/cart/delete/${cartItemId}`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('删除购物车商品失败');
-
-    logInfo('删除成功');
-  });
-}
-
-// ========================================
-// 5. 收货地址API测试 (3个)
-// ========================================
-async function testAddressAPI(userToken) {
-  logSection('=== 收货地址API测试 ===');
-
-  let addressId;
-
-  await test('添加收货地址', async () => {
-    const response = await axios.post(`${API_BASE}/api/addresses`, {
-      receiver_name: '张三',
-      phone: '13800138000',
-      province: '北京市',
-      city: '北京市',
-      district: '朝阳区',
-      detail_address: '某某街道123号',
-      is_default: 0
-    }, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('添加收货地址失败');
-    if (!response.data.data.id) throw new Error('缺少地址ID');
-
-    addressId = response.data.data.id;
-    logInfo(`地址ID: ${addressId}`);
-    logInfo(`地址: ${response.data.data.province}${response.data.data.city}${response.data.data.district}`);
-  });
-
-  await test('获取地址列表', async () => {
-    const response = await axios.get(`${API_BASE}/api/addresses`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取地址列表失败');
-    if (!Array.isArray(response.data.data)) throw new Error('地址列表应为数组');
-
-    logInfo(`地址数量: ${response.data.data.length}`);
-  });
-
-  await test('设置默认地址', async () => {
-    if (!addressId) {
-      logInfo('没有地址可设置，跳过');
-      return;
-    }
-
-    const response = await axios.put(`${API_BASE}/api/addresses/${addressId}/default`, {}, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('设置默认地址失败');
-    if (response.data.data.is_default !== 1) throw new Error('默认地址未设置');
-
-    logInfo('默认地址设置成功');
-  });
-}
-
-// ========================================
-// 6. 订单API测试 (3个)
-// ========================================
-async function testOrderAPI(userToken) {
-  logSection('=== 订单API测试 ===');
-
-  let orderId;
-
-  await test('创建订单', async () => {
-    const response = await axios.post(`${API_BASE}/api/orders/create`, {
-      items: [
-        { product_id: 1, quantity: 1 }
-      ],
-      address_id: 1
-    }, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('创建订单失败');
-    if (!response.data.data.id) throw new Error('缺少订单ID');
-
-    orderId = response.data.data.id;
-    logInfo(`订单ID: ${orderId}`);
-    logInfo(`订单号: ${response.data.data.order_no}`);
-    logInfo(`总金额: ¥${response.data.data.total_amount}`);
-  });
-
-  await test('获取订单列表', async () => {
-    const response = await axios.get(`${API_BASE}/api/orders/list`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取订单列表失败');
-    if (!Array.isArray(response.data.data)) throw new Error('订单列表应为数组');
-
-    logInfo(`订单数量: ${response.data.data.length}`);
-  });
-
-  await test('获取订单详情', async () => {
-    if (!orderId) {
-      logInfo('没有订单可查询，跳过');
-      return;
-    }
-
-    const response = await axios.get(`${API_BASE}/api/orders/detail/${orderId}`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取订单详情失败');
-    if (!response.data.data.id) throw new Error('缺少订单详情');
-
-    logInfo(`订单状态: ${response.data.data.status}`);
-  });
-}
-
-// ========================================
-// 7. 管理端商品API测试 (3个)
-// ========================================
-async function testAdminProductAPI(adminToken) {
-  logSection('=== 管理端商品API测试 ===');
-
-  let productId;
-
-  await test('获取商品列表（管理端）', async () => {
-    const response = await axios.get(`${API_BASE}/api/admin/products`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取商品列表失败');
-    if (!response.data.data.list) throw new Error('缺少商品列表数据');
-
-    logInfo(`商品数量: ${response.data.data.list.length}`);
-  });
-
-  await test('添加商品（测试数据）', async () => {
-    const response = await axios.post(`${API_BASE}/api/admin/products`, {
-      name: '集成测试商品',
-      category_id: 1,
-      price: 99.99,
-      stock: 100,
-      description: '这是一个集成测试添加的商品'
-    }, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('添加商品失败');
-    if (!response.data.data.id) throw new Error('缺少商品ID');
-
-    productId = response.data.data.id;
-    logInfo(`新商品ID: ${productId}`);
-    logInfo(`商品名称: ${response.data.data.name}`);
-  });
-
-  await test('更新商品状态', async () => {
-    if (!productId) {
-      logInfo('没有商品可更新，跳过');
-      return;
-    }
-
-    const response = await axios.put(`${API_BASE}/api/admin/products/${productId}`, {
-      status: 0  // 下架
-    }, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('更新商品状态失败');
-    if (response.data.data.status !== 0) throw new Error('状态未更新');
-
-    logInfo('商品已下架');
-  });
-}
-
-// ========================================
-// 8. 管理端订单API测试 (2个)
-// ========================================
-async function testAdminOrderAPI(adminToken) {
-  logSection('=== 管理端订单API测试 ===');
-
-  let orderId;
-
-  await test('获取订单列表（管理端）', async () => {
-    const response = await axios.get(`${API_BASE}/api/admin/orders`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('获取订单列表失败');
-    if (!response.data.data.list) throw new Error('缺少订单列表数据');
-
-    logInfo(`订单数量: ${response.data.data.list.length}`);
-    if (response.data.data.list.length > 0) {
-      orderId = response.data.data.list[0].id;
-      logInfo(`第一个订单ID: ${orderId}`);
-    }
-  });
-
-  await test('订单发货', async () => {
-    if (!orderId) {
-      logInfo('没有订单可发货，跳过');
-      return;
-    }
-
-    const response = await axios.put(`${API_BASE}/api/admin/orders/${orderId}/ship`, {
-      tracking_number: 'SF1234567890'
-    }, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-
-    if (response.data.code !== 'Success') throw new Error('订单发货失败');
-    if (response.data.data.status !== 'shipped') throw new Error('订单状态未更新');
-
-    logInfo('订单已发货');
-    logInfo(`物流单号: ${response.data.data.tracking_number}`);
-  });
-}
-
-// ========================================
-// 主测试流程
-// ========================================
-async function runTests() {
-  const startTime = Date.now();
-
-  console.log('\n' + '🧪'.repeat(30));
-  log('开始集成测试...', 'cyan');
-  console.log('🧪'.repeat(30) + '\n');
-
-  logInfo(`测试地址: ${API_BASE}`);
-  logInfo(`测试时间: ${new Date().toLocaleString('zh-CN')}`);
-  logInfo(`测试用户: ${TEST_USER.username}`);
-  logInfo(`测试管理员: ${TEST_ADMIN.username}\n`);
-
-  try {
-    // 1. 用户认证测试
-    const userToken = await testUserAuth();
-
-    // 2. 管理员认证测试
-    const adminToken = await testAdminAuth();
-
-    // 3. 商品API测试（无需认证）
-    await testProductAPI();
-
-    // 4. 购物车API测试（需要用户token）
-    await testCartAPI(userToken);
-
-    // 5. 收货地址API测试（需要用户token）
-    await testAddressAPI(userToken);
-
-    // 6. 订单API测试（需要用户token）
-    await testOrderAPI(userToken);
-
-    // 7. 管理端商品API测试（需要管理员token）
-    await testAdminProductAPI(adminToken);
-
-    // 8. 管理端订单API测试（需要管理员token）
-    await testAdminOrderAPI(adminToken);
-
-  } catch (error) {
-    logError(`测试过程中发生严重错误: ${error.message}`);
-    console.error(error);
-  }
-
-  const endTime = Date.now();
-  const duration = ((endTime - startTime) / 1000).toFixed(2);
-
-  // ========================================
-  // 测试结果汇总
-  // ========================================
-  console.log('\n' + '='.repeat(60));
-  log('📊 测试结果汇总', 'cyan');
-  console.log('='.repeat(60));
-
-  const total = results.passed + results.failed;
-  const passRate = total > 0 ? ((results.passed / total) * 100).toFixed(1) : 0;
-
-  log(`总测试数: ${total}`, 'reset');
-  logSuccess(`通过: ${results.passed}`);
-  logError(`失败: ${results.failed}`);
-  logInfo(`通过率: ${passRate}%`);
-  logInfo(`执行时间: ${duration}秒`);
-
-  if (results.failed > 0) {
-    console.log('\n失败的测试:');
-    results.tests
-      .filter(t => t.status === 'FAILED')
-      .forEach(t => {
-        logError(`  - ${t.name}: ${t.error}`);
+});
+
+test.after(async () => {
+  if (server) {
+    await new Promise((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve();
       });
+    });
   }
 
-  console.log('\n' + '='.repeat(60));
-  if (results.failed === 0) {
-    log(`📊 测试结果: ${results.passed}/${total} 通过`, 'green');
-    log(`✅ 通过率: ${passRate}%`, 'green');
-  } else {
-    log(`📊 测试结果: ${results.passed}/${total} 通过`, 'yellow');
-    log(`⚠️  通过率: ${passRate}%`, 'yellow');
-  }
-  console.log('='.repeat(60) + '\n');
+  fs.rmSync(tempDataDir, { recursive: true, force: true });
+});
 
-  process.exit(results.failed > 0 ? 1 : 0);
+async function registerUser() {
+  const stamp = `${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
+  const payload = {
+    username: `integration_user_${stamp}`,
+    password: '123456',
+    phone: `139${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
+    email: `integration_${stamp}@example.test`,
+  };
+
+  const response = await api.post('/api/users/register', payload);
+
+  assert.equal(response.status, 201, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+
+  return payload;
 }
 
-// 运行测试
-runTests().catch(error => {
-  logError(`致命错误: ${error.message}`);
-  console.error(error);
-  process.exit(1);
+async function registerAndLoginUser() {
+  const credentials = await registerUser();
+  const token = await loginUser({
+    username: credentials.username,
+    password: credentials.password,
+  });
+
+  return {
+    credentials,
+    token,
+  };
+}
+
+async function loginUser(credentials = { username: 'testuser', password: '123456' }) {
+  const response = await api.post('/api/users/login', credentials);
+
+  assert.equal(response.status, 200, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+  assert.ok(response.data.data.token, JSON.stringify(response.data));
+
+  return response.data.data.token;
+}
+
+async function loginAdmin() {
+  const response = await api.post('/api/admin/login', {
+    username: 'admin',
+    password: 'admin123',
+  });
+
+  assert.equal(response.status, 200, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+  assert.ok(response.data.data.token, JSON.stringify(response.data));
+
+  return response.data.data.token;
+}
+
+function authHeaders(token) {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+async function createAddress(token) {
+  const stamp = Date.now();
+  const response = await api.post(
+    '/api/addresses',
+    {
+      receiverName: `Integration User ${stamp}`,
+      receiverPhone: '13800138000',
+      provinceCode: '110000',
+      provinceName: 'Beijing',
+      cityCode: '110100',
+      cityName: 'Beijing',
+      districtCode: '110105',
+      districtName: 'Chaoyang',
+      detailAddress: `Integration Street ${stamp}`,
+      isDefault: 1,
+    },
+    {
+      headers: authHeaders(token),
+    },
+  );
+
+  assert.equal(response.status, 201, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+
+  return response.data.data.id;
+}
+
+async function createOrder(token, options = {}) {
+  const addressId = options.addressId || (await createAddress(token));
+  const response = await api.post(
+    '/api/orders/create',
+    {
+      items: [{ skuId: 1, quantity: 1 }],
+      addressId,
+      remark: options.remark || 'integration-test-order',
+    },
+    {
+      headers: authHeaders(token),
+    },
+  );
+
+  assert.equal(response.status, 201, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+
+  return response.data.data;
+}
+
+async function payOrder(token, orderNo) {
+  const response = await api.put(
+    `/api/orders/${orderNo}/pay`,
+    {},
+    {
+      headers: authHeaders(token),
+    },
+  );
+
+  assert.equal(response.status, 200, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+
+  return response.data.data;
+}
+
+async function createAfterSale(token) {
+  const { id: orderId, order_no: orderNo } = await createOrder(token, {
+    remark: 'integration-after-sale',
+  });
+  const detailResponse = await api.get(`/api/orders/detail/${orderId}`, {
+    headers: authHeaders(token),
+  });
+
+  assert.equal(detailResponse.status, 200, JSON.stringify(detailResponse.data));
+  assert.ok(Array.isArray(detailResponse.data.data.items));
+  assert.ok(detailResponse.data.data.items.length > 0);
+
+  const firstItem = detailResponse.data.data.items[0];
+  const applyResponse = await api.post(
+    '/api/orders/after-sales/apply',
+    {
+      orderNo,
+      refundRequestAmount: Math.round(Number(firstItem.total_amount) * 100),
+      rightsImageUrls: ['https://example.com/proof.png'],
+      rightsReasonDesc: 'integration after-sale apply',
+      rightsReasonType: 1,
+      rightsType: 20,
+      refundMemo: 'integration memo',
+      items: [
+        {
+          skuId: firstItem.sku_id,
+          spuId: firstItem.spu_id,
+          rightsQuantity: 1,
+          itemTotalAmount: Math.round(Number(firstItem.total_amount) * 100),
+        },
+      ],
+    },
+    {
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
+  assert.equal(applyResponse.status, 201, JSON.stringify(applyResponse.data));
+  assert.equal(applyResponse.data.code, 'Success', JSON.stringify(applyResponse.data));
+
+  return {
+    orderId,
+    orderNo,
+    rightsNo: applyResponse.data.data.rightsNo,
+  };
+}
+
+test('consumer auth and catalog smoke flow satisfies requirement baseline', async () => {
+  const healthResponse = await api.get('/health');
+  assert.equal(healthResponse.status, 200, JSON.stringify(healthResponse.data));
+  assert.equal(healthResponse.data.status, 'ok');
+
+  const credentials = await registerUser();
+  const token = await loginUser({
+    username: credentials.username,
+    password: credentials.password,
+  });
+
+  const profileResponse = await api.get('/api/users/profile', {
+    headers: authHeaders(token),
+  });
+
+  assert.equal(profileResponse.status, 200, JSON.stringify(profileResponse.data));
+  assert.equal(profileResponse.data.code, 'Success', JSON.stringify(profileResponse.data));
+  assert.equal(profileResponse.data.data.username, credentials.username);
+
+  const productListResponse = await api.get('/api/products/list', {
+    params: {
+      page: 1,
+      pageSize: 10,
+      keyword: '苹果',
+    },
+  });
+
+  assert.equal(productListResponse.status, 200, JSON.stringify(productListResponse.data));
+  assert.equal(productListResponse.data.code, 'Success', JSON.stringify(productListResponse.data));
+  assert.ok(Array.isArray(productListResponse.data.data));
+  assert.ok(productListResponse.data.data.length > 0, 'expected searchable products');
+
+  const productId = productListResponse.data.data[0].id;
+  const productDetailResponse = await api.get(`/api/products/detail/${productId}`);
+  assert.equal(productDetailResponse.status, 200, JSON.stringify(productDetailResponse.data));
+  assert.equal(productDetailResponse.data.code, 'Success', JSON.stringify(productDetailResponse.data));
+  assert.ok(Array.isArray(productDetailResponse.data.data.skus));
+  assert.ok(productDetailResponse.data.data.skus.length > 0);
+
+  const categoriesResponse = await api.get('/api/products/categories/tree');
+  assert.equal(categoriesResponse.status, 200, JSON.stringify(categoriesResponse.data));
+  assert.equal(categoriesResponse.data.code, 'Success', JSON.stringify(categoriesResponse.data));
+  assert.ok(Array.isArray(categoriesResponse.data.data));
+  assert.ok(categoriesResponse.data.data.length > 0, 'expected category tree');
+  assert.ok(Array.isArray(categoriesResponse.data.data[0].children));
+});
+
+test('consumer cart, address and order flow works end-to-end', async () => {
+  const { token } = await registerAndLoginUser();
+  const addressId = await createAddress(token);
+
+  const addCartResponse = await api.post(
+    '/api/cart/add',
+    {
+      skuId: 1,
+      quantity: 1,
+    },
+    {
+      headers: authHeaders(token),
+    },
+  );
+
+  assert.equal(addCartResponse.status, 201, JSON.stringify(addCartResponse.data));
+  assert.equal(addCartResponse.data.code, 'Success', JSON.stringify(addCartResponse.data));
+  assert.ok(addCartResponse.data.data.id);
+
+  const cartListResponse = await api.get('/api/cart/list', {
+    headers: authHeaders(token),
+  });
+  assert.equal(cartListResponse.status, 200, JSON.stringify(cartListResponse.data));
+  assert.equal(cartListResponse.data.code, 'Success', JSON.stringify(cartListResponse.data));
+  assert.ok(Array.isArray(cartListResponse.data.data.items));
+  assert.ok(cartListResponse.data.data.items.some((item) => Number(item.id) === Number(addCartResponse.data.data.id)));
+
+  const updateCartResponse = await api.put(
+    '/api/cart/update',
+    {
+      cartId: addCartResponse.data.data.id,
+      quantity: 2,
+      isChecked: 1,
+    },
+    {
+      headers: authHeaders(token),
+    },
+  );
+  assert.equal(updateCartResponse.status, 200, JSON.stringify(updateCartResponse.data));
+  assert.equal(updateCartResponse.data.code, 'Success', JSON.stringify(updateCartResponse.data));
+  assert.equal(updateCartResponse.data.data.quantity, 2);
+
+  const addressListResponse = await api.get('/api/addresses', {
+    headers: authHeaders(token),
+  });
+  assert.equal(addressListResponse.status, 200, JSON.stringify(addressListResponse.data));
+  assert.ok(Array.isArray(addressListResponse.data.data));
+  assert.ok(addressListResponse.data.data.some((item) => Number(item.id) === Number(addressId)));
+
+  const order = await createOrder(token, {
+    addressId,
+    remark: 'integration-consumer-order',
+  });
+  const orderListResponse = await api.get('/api/orders/list', {
+    headers: authHeaders(token),
+    params: {
+      page: 1,
+      pageSize: 10,
+    },
+  });
+
+  assert.equal(orderListResponse.status, 200, JSON.stringify(orderListResponse.data));
+  assert.equal(orderListResponse.data.code, 'Success', JSON.stringify(orderListResponse.data));
+  assert.ok(Array.isArray(orderListResponse.data.data.list));
+  assert.ok(orderListResponse.data.data.list.some((item) => item.order_no === order.order_no));
+
+  const orderDetailResponse = await api.get(`/api/orders/detail/${order.id}`, {
+    headers: authHeaders(token),
+  });
+  assert.equal(orderDetailResponse.status, 200, JSON.stringify(orderDetailResponse.data));
+  assert.equal(orderDetailResponse.data.data.order_no, order.order_no);
+  assert.ok(Array.isArray(orderDetailResponse.data.data.items));
+
+  const paidOrder = await payOrder(token, order.order_no);
+  assert.equal(paidOrder.orderNo, order.order_no);
+  assert.equal(paidOrder.payStatus, 1);
+});
+
+test('consumer after-sale flow exposes preview, reasons, apply, list and detail', async () => {
+  const { token } = await registerAndLoginUser();
+  const order = await createOrder(token, {
+    remark: 'integration-after-sale-preview',
+  });
+
+  const orderDetailResponse = await api.get(`/api/orders/detail/${order.id}`, {
+    headers: authHeaders(token),
+  });
+  const firstItem = orderDetailResponse.data.data.items[0];
+
+  const previewResponse = await api.get('/api/orders/after-sales/preview', {
+    headers: authHeaders(token),
+    params: {
+      orderNo: order.order_no,
+      skuId: firstItem.sku_id,
+      spuId: firstItem.spu_id,
+      numOfSku: 1,
+    },
+  });
+  assert.equal(previewResponse.status, 200, JSON.stringify(previewResponse.data));
+  assert.equal(previewResponse.data.code, 'Success', JSON.stringify(previewResponse.data));
+
+  const reasonsResponse = await api.get('/api/orders/after-sales/reasons', {
+    headers: authHeaders(token),
+    params: {
+      rightsReasonType: 1,
+    },
+  });
+  assert.equal(reasonsResponse.status, 200, JSON.stringify(reasonsResponse.data));
+  assert.equal(reasonsResponse.data.code, 'Success', JSON.stringify(reasonsResponse.data));
+  assert.ok(Array.isArray(reasonsResponse.data.data.rightsReasonList));
+  assert.ok(reasonsResponse.data.data.rightsReasonList.length > 0);
+
+  const afterSale = await createAfterSale(token);
+
+  const afterSaleListResponse = await api.get('/api/orders/after-sales', {
+    headers: authHeaders(token),
+  });
+  assert.equal(afterSaleListResponse.status, 200, JSON.stringify(afterSaleListResponse.data));
+  assert.ok(Array.isArray(afterSaleListResponse.data.data.list));
+  assert.ok(afterSaleListResponse.data.data.list.some((item) => item.rightsNo === afterSale.rightsNo));
+
+  const afterSaleDetailResponse = await api.get(`/api/orders/after-sales/${afterSale.rightsNo}`, {
+    headers: authHeaders(token),
+  });
+  assert.equal(afterSaleDetailResponse.status, 200, JSON.stringify(afterSaleDetailResponse.data));
+  assert.equal(afterSaleDetailResponse.data.code, 'Success', JSON.stringify(afterSaleDetailResponse.data));
+  assert.equal(afterSaleDetailResponse.data.data.rightsNo, afterSale.rightsNo);
+});
+
+test('admin management flow covers products, orders, users, delivery and after-sales', async () => {
+  const adminToken = await loginAdmin();
+  const { token: userToken } = await registerAndLoginUser();
+
+  const profileResponse = await api.get('/api/admin/profile', {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(profileResponse.status, 200, JSON.stringify(profileResponse.data));
+  assert.equal(profileResponse.data.code, 'Success', JSON.stringify(profileResponse.data));
+
+  const productsResponse = await api.get('/api/admin/products', {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(productsResponse.status, 200, JSON.stringify(productsResponse.data));
+  assert.equal(productsResponse.data.code, 'Success', JSON.stringify(productsResponse.data));
+  assert.ok(Array.isArray(productsResponse.data.data));
+
+  const createProductResponse = await api.post(
+    '/api/admin/products',
+    {
+      title: `Integration Product ${Date.now()}`,
+      categoryId: 4,
+      brand: 'Integration Brand',
+      primaryImage: 'https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-08b.png',
+      detailImages: ['https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png'],
+      productDetail: 'integration detail',
+      skus: [
+        {
+          sku_name: '默认规格',
+          price: 88.8,
+          line_price: 99.9,
+          stock: 20,
+          specs: { weight: '500g' },
+        },
+      ],
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(createProductResponse.status, 201, JSON.stringify(createProductResponse.data));
+  assert.equal(createProductResponse.data.code, 'Success', JSON.stringify(createProductResponse.data));
+  const productId = createProductResponse.data.data.id;
+
+  const productDetailResponse = await api.get(`/api/admin/products/${productId}`, {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(productDetailResponse.status, 200, JSON.stringify(productDetailResponse.data));
+  assert.equal(productDetailResponse.data.data.id, productId);
+
+  const updateProductResponse = await api.put(
+    `/api/admin/products/${productId}`,
+    {
+      status: 0,
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(updateProductResponse.status, 200, JSON.stringify(updateProductResponse.data));
+  assert.equal(updateProductResponse.data.code, 'Success', JSON.stringify(updateProductResponse.data));
+
+  const usersResponse = await api.get('/api/admin/users', {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(usersResponse.status, 200, JSON.stringify(usersResponse.data));
+  assert.ok(Array.isArray(usersResponse.data.data));
+  assert.ok(usersResponse.data.data.length > 0);
+  const userId = usersResponse.data.data[0].id;
+
+  const updateRemarkResponse = await api.put(
+    `/api/admin/users/${userId}/remark`,
+    {
+      remark: 'integration remark',
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(updateRemarkResponse.status, 200, JSON.stringify(updateRemarkResponse.data));
+  assert.equal(updateRemarkResponse.data.data.remark, 'integration remark');
+
+  const userDetailResponse = await api.get(`/api/admin/users/${userId}`, {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(userDetailResponse.status, 200, JSON.stringify(userDetailResponse.data));
+  assert.equal(userDetailResponse.data.data.id, userId);
+  assert.ok(Array.isArray(userDetailResponse.data.data.orderHistory));
+
+  const createAreaResponse = await api.post(
+    '/api/admin/delivery-areas',
+    {
+      areaName: `Integration Area ${Date.now()}`,
+      description: 'integration area',
+      baseFee: 800,
+      freeThreshold: 19900,
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(createAreaResponse.status, 201, JSON.stringify(createAreaResponse.data));
+  const areaId = createAreaResponse.data.data.id;
+
+  const updateAreaResponse = await api.put(
+    `/api/admin/delivery-areas/${areaId}`,
+    {
+      areaName: `Integration Area Updated ${Date.now()}`,
+      description: 'integration area updated',
+      baseFee: 1200,
+      freeThreshold: 29900,
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(updateAreaResponse.status, 200, JSON.stringify(updateAreaResponse.data));
+  assert.equal(updateAreaResponse.data.code, 'Success', JSON.stringify(updateAreaResponse.data));
+
+  const deleteAreaResponse = await api.delete(`/api/admin/delivery-areas/${areaId}`, {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(deleteAreaResponse.status, 200, JSON.stringify(deleteAreaResponse.data));
+  assert.equal(deleteAreaResponse.data.code, 'Success', JSON.stringify(deleteAreaResponse.data));
+
+  const order = await createOrder(userToken, {
+    remark: 'integration-admin-ship',
+  });
+  await payOrder(userToken, order.order_no);
+
+  const adminOrdersResponse = await api.get('/api/admin/orders', {
+    headers: authHeaders(adminToken),
+    params: {
+      orderNo: order.order_no,
+    },
+  });
+  assert.equal(adminOrdersResponse.status, 200, JSON.stringify(adminOrdersResponse.data));
+  assert.equal(adminOrdersResponse.data.code, 'Success', JSON.stringify(adminOrdersResponse.data));
+  assert.ok(Array.isArray(adminOrdersResponse.data.data));
+  assert.ok(adminOrdersResponse.data.data.some((item) => item.order_no === order.order_no));
+
+  const shipOrderResponse = await api.put(
+    `/api/admin/orders/${order.order_no}/ship`,
+    {
+      deliveryCompany: 'SF Express',
+      deliveryNo: `SF${Date.now()}`,
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(shipOrderResponse.status, 200, JSON.stringify(shipOrderResponse.data));
+  assert.equal(shipOrderResponse.data.code, 'Success', JSON.stringify(shipOrderResponse.data));
+
+  const afterSale = await createAfterSale(userToken);
+  const adminAfterSalesResponse = await api.get('/api/admin/after-sales', {
+    headers: authHeaders(adminToken),
+  });
+  assert.equal(adminAfterSalesResponse.status, 200, JSON.stringify(adminAfterSalesResponse.data));
+  assert.ok(Array.isArray(adminAfterSalesResponse.data.data));
+  assert.ok(adminAfterSalesResponse.data.data.some((item) => item.id === afterSale.rightsNo));
+
+  const auditResponse = await api.put(
+    `/api/admin/after-sales/${afterSale.rightsNo}/audit`,
+    {
+      approved: true,
+    },
+    {
+      headers: {
+        ...authHeaders(adminToken),
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  assert.equal(auditResponse.status, 200, JSON.stringify(auditResponse.data));
+  assert.equal(auditResponse.data.code, 'Success', JSON.stringify(auditResponse.data));
+  assert.equal(auditResponse.data.data.status, 50);
 });

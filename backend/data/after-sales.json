@@ -20,7 +20,7 @@
         "skuId": "1",
         "spuId": "1",
         "goodsName": "新疆阿克苏苹果",
-        "goodsPictureUrl": "https://example.com/products/apple.jpg",
+        "goodsPictureUrl": "/assets/images/products/apple.png",
         "specInfo": [
           {
             "specTitle": "size",
@@ -41,13 +41,13 @@
       "logisticsStatus": null,
       "logisticsCompanyCode": "",
       "logisticsCompanyName": "",
-      "receiverName": "Test User 1773054735159",
+      "receiverName": "测试用户",
       "receiverPhone": "13800138000",
       "receiverProvince": "",
       "receiverCity": "",
       "receiverCountry": "",
       "receiverArea": "",
-      "receiverAddress": "BeijingBeijingChaoyangTest Street 1773054735159",
+      "receiverAddress": "北京市朝阳区测试街道 99 号",
       "remark": "",
       "nodes": []
     },
@@ -60,7 +60,7 @@
     "typeName": "仅退款",
     "afterSaleRequireType": "REFUND_MONEY",
     "goodsName": "新疆阿克苏苹果",
-    "goodsImage": "https://example.com/products/apple.jpg",
+    "goodsImage": "/assets/images/products/apple.png",
     "buttonVOs": [
       {
         "name": "撤销申请",
@@ -88,28 +88,28 @@
     "storeName": "默认店铺",
     "rightsType": 10,
     "rightsReasonType": 2,
-    "rightsReasonDesc": "商品有划痕",
-    "refundAmount": 29900,
-    "refundRequestAmount": 29900,
+    "rightsReasonDesc": "商品包装破损",
+    "refundAmount": 3990,
+    "refundRequestAmount": 3990,
     "rightsStatus": 10,
     "createTime": "2026-03-03 11:00:00",
-    "refundMemo": "收到商品后发现有划痕",
+    "refundMemo": "收到商品后发现包装渗漏",
     "rightsImageUrls": [
-      "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png"
+      "/assets/images/comments/proof.png"
     ],
     "goodsItems": [
       {
-        "skuId": 1,
-        "spuId": 1,
-        "goodsName": "不锈钢刀叉勺套装",
-        "goodsPictureUrl": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png",
+        "skuId": 8,
+        "spuId": 4,
+        "goodsName": "立白洗衣液",
+        "goodsPictureUrl": "/assets/images/products/detergent.png",
         "specInfo": [
           {
-            "specTitle": "规格",
-            "specValues": "四件套"
+            "specTitle": "weight",
+            "specValues": "3kg"
           }
         ],
-        "itemRefundAmount": 29900,
+        "itemRefundAmount": 3990,
         "rightsQuantity": 1
       }
     ],
@@ -125,26 +125,26 @@
       "receiverCity": "",
       "receiverCountry": "",
       "receiverArea": "",
-      "receiverAddress": "深圳市南山区科技园",
+      "receiverAddress": "深圳市南山区科技园 8 栋",
       "remark": "",
       "nodes": []
     },
     "rightsRefund": {
       "traceNo": "TRACE20260303001",
-      "refundDesc": "商品有划痕",
-      "refundAmount": 29900
+      "refundDesc": "商品包装破损",
+      "refundAmount": 3990
     },
     "refundMethodList": [
       {
         "refundMethodName": "微信支付",
-        "refundMethodAmount": 29900
+        "refundMethodAmount": 3990
       }
     ],
     "id": "AS20260303001",
     "typeName": "退货退款",
     "afterSaleRequireType": "REFUND_GOODS_MONEY",
-    "goodsName": "不锈钢刀叉勺套装",
-    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png",
+    "goodsName": "立白洗衣液",
+    "goodsImage": "/assets/images/products/detergent.png",
     "buttonVOs": [
       {
         "name": "撤销申请",
@@ -175,14 +175,14 @@
     "rightsImageUrls": [],
     "goodsItems": [
       {
-        "skuId": 2,
-        "spuId": 2,
-        "goodsName": "白色短袖连衣裙",
-        "goodsPictureUrl": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png",
+        "skuId": 12,
+        "spuId": 6,
+        "goodsName": "补水保湿面膜",
+        "goodsPictureUrl": "/assets/images/products/mask.png",
         "specInfo": [
           {
-            "specTitle": "颜色",
-            "specValues": "白色"
+            "specTitle": "quantity",
+            "specValues": "20片"
           }
         ],
         "itemRefundAmount": 19800,
@@ -219,8 +219,8 @@
     "id": "AS20260302002",
     "typeName": "仅退款",
     "afterSaleRequireType": "REFUND_MONEY",
-    "goodsName": "白色短袖连衣裙",
-    "goodsImage": "https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png",
+    "goodsName": "补水保湿面膜",
+    "goodsImage": "/assets/images/products/mask.png",
     "buttonVOs": [],
     "rightsStatusName": "已完成",
     "userRightsStatus": 160,

@@ -1,5 +1,9 @@
 import { fetchGoodsList } from '../../../services/good/fetchGoodsList';
+import { fetchGood } from '../../../services/good/fetchGood';
+import { addToCart } from '../../../services/cart-new';
 import Toast from 'tdesign-miniprogram/toast/index';
+
+const { buildCatalogAddCartPayload } = require('../../../services/_utils/order-action-helpers');
 
 const initFilters = {
   overall: 1,
@@ -26,6 +30,32 @@ Page({
   pageNum: 1,
   pageSize: 30,
   total: 0,
+
+  async addGoodsToCart(goods) {
+    wx.showLoading({
+      title: '加入中',
+      mask: true,
+    });
+
+    try {
+      const details = await fetchGood(goods.spuId);
+      const payload = buildCatalogAddCartPayload({ goods, details });
+
+      if (!payload.skuId) {
+        throw new Error('missing sku');
+      }
+
+      await addToCart(payload);
+    } catch (error) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '快捷加购失败，请进入详情页选择规格',
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
 
   handleFilterChange(e) {
     const { layout, overall, sorts } = e.detail;
@@ -145,12 +175,15 @@ Page({
     this.init(false);
   },
 
-  handleAddCart() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '请在详情页选择规格后加入购物车',
-    });
+  handleAddCart(e) {
+    const { index } = e.detail || {};
+    const goods = typeof index === 'number' ? this.data.goodsList[index] : e.detail && e.detail.goods;
+
+    if (!goods) {
+      return;
+    }
+
+    this.addGoodsToCart(goods);
   },
 
   tagClickHandle() {

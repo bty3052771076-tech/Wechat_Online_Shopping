@@ -9,16 +9,21 @@ const {
 const { buildAdminCategoryOptions } = require('../services/_utils/admin-adapters');
 const {
   buildGoodsDetailCartPayload,
+  buildCatalogAddCartPayload,
   buildRebuyGoodsRequestList,
 } = require('../services/_utils/order-action-helpers');
 
-test('normalizeImageUrl replaces placeholder example.com assets with a stable product image', () => {
-  assert.equal(normalizeImageUrl('https://example.com/apple.jpg'), DEFAULT_PRODUCT_IMAGE);
-  assert.equal(normalizeImageUrl('https://cdn.example.com/apple.jpg'), DEFAULT_PRODUCT_IMAGE);
-  assert.equal(normalizeImageUrl(''), DEFAULT_PRODUCT_IMAGE);
+const PRODUCT_APPLE_IMAGE = '/assets/images/products/apple.png';
+const DEFAULT_CATEGORY_IMAGE = '/assets/images/categories/default.png';
+
+test('normalizeImageUrl uses scene-aware mapping for placeholders and defaults', () => {
+  assert.equal(normalizeImageUrl('https://example.com/products/apple.jpg', 'product'), PRODUCT_APPLE_IMAGE);
+  assert.equal(normalizeImageUrl('https://cdn.example.com/products/apple.jpg', 'product'), PRODUCT_APPLE_IMAGE);
+  assert.equal(normalizeImageUrl('', 'product'), DEFAULT_PRODUCT_IMAGE);
+  assert.equal(normalizeImageUrl('', 'category'), DEFAULT_CATEGORY_IMAGE);
   assert.equal(
     normalizeImageUrl('https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-08b.png'),
-    'https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-08b.png',
+    PRODUCT_APPLE_IMAGE,
   );
 });
 
@@ -46,13 +51,13 @@ test('adaptCategoryTreeResponse maps backend category tree into goods-category c
     {
       id: 1,
       name: '生鲜水果',
-      thumbnail: DEFAULT_PRODUCT_IMAGE,
+      thumbnail: DEFAULT_CATEGORY_IMAGE,
       disabled: false,
       children: [
         {
           id: 11,
           name: '苹果',
-          thumbnail: DEFAULT_PRODUCT_IMAGE,
+          thumbnail: DEFAULT_CATEGORY_IMAGE,
           disabled: false,
           children: [],
         },
@@ -88,6 +93,23 @@ test('buildGoodsDetailCartPayload uses selected sku and quantity for real add-to
   assert.deepEqual(result, {
     skuId: 'sku-101',
     quantity: 2,
+  });
+});
+
+test('buildCatalogAddCartPayload falls back to the first sku for list-page add-to-cart', () => {
+  const payload = buildCatalogAddCartPayload({
+    goods: {
+      spuId: 'spu-9',
+      title: '测试商品',
+    },
+    details: {
+      skuList: [{ skuId: 'sku-100' }, { skuId: 'sku-101' }],
+    },
+  });
+
+  assert.deepEqual(payload, {
+    skuId: 'sku-100',
+    quantity: 1,
   });
 });
 

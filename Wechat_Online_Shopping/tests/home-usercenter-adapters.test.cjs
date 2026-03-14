@@ -18,7 +18,7 @@ test('buildHomeSwiper uses reachable tdesign banner assets instead of retired CO
 
   assert.ok(Array.isArray(swiper));
   assert.ok(swiper.length >= 3);
-  assert.ok(swiper.every((item) => item.startsWith('https://tdesign.gtimg.com/')));
+  assert.ok(swiper.every((item) => item.startsWith('/assets/images/banners/')));
 });
 
 test('buildHomeTabs maps backend categories into real category tabs after curated tabs', () => {

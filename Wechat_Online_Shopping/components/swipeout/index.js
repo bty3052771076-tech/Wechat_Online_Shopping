@@ -15,7 +15,10 @@ Component({
       type: Number,
       value: 0,
     },
-    asyncClose: Boolean,
+    asyncClose: {
+      type: Boolean,
+      value: false,
+    },
   },
   attached() {
     ARRAY.push(this);
@@ -30,7 +33,6 @@ Component({
    */
   data: {
     wrapperStyle: '',
-    asyncClose: false,
     closed: true,
   },
 

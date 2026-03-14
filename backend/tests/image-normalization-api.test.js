@@ -50,6 +50,18 @@ async function login() {
   return response.data.data.token;
 }
 
+async function loginAdmin() {
+  const response = await api.post('/api/admin/login', {
+    username: 'admin',
+    password: 'admin123',
+  });
+
+  assert.equal(response.status, 200, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+
+  return response.data.data.token;
+}
+
 function collectTreeImages(nodes = []) {
   return nodes.flatMap((node) => {
     const current = [];
@@ -66,7 +78,6 @@ function collectTreeImages(nodes = []) {
 test('product and category endpoints replace placeholder example.com images', async () => {
   const productListResponse = await api.get('/api/products/list', {
     params: {
-      keyword: '苹果',
       page: 1,
       pageSize: 10,
     },
@@ -80,23 +91,50 @@ test('product and category endpoints replace placeholder example.com images', as
     productListResponse.data.data.every((item) => !String(item.primary_image || '').includes('example.com')),
     JSON.stringify(productListResponse.data.data),
   );
+  assert.ok(
+    new Set(productListResponse.data.data.map((item) => String(item.primary_image || ''))).size >= 2,
+    JSON.stringify(productListResponse.data.data.map((item) => item.primary_image)),
+  );
+  assert.ok(
+    productListResponse.data.data.every((item) => String(item.primary_image || '').startsWith('/assets/images/products/')),
+    JSON.stringify(productListResponse.data.data.map((item) => item.primary_image)),
+  );
 
   const detailResponse = await api.get('/api/products/detail/1');
   assert.equal(detailResponse.status, 200, JSON.stringify(detailResponse.data));
   assert.equal(detailResponse.data.code, 'Success', JSON.stringify(detailResponse.data));
   assert.ok(!String(detailResponse.data.data.primary_image || '').includes('example.com'));
+  assert.ok(String(detailResponse.data.data.primary_image || '').startsWith('/assets/images/products/'));
   assert.ok(
     (detailResponse.data.data.detail_images || []).every((item) => !String(item).includes('example.com')),
+    JSON.stringify(detailResponse.data.data.detail_images),
+  );
+  assert.ok(
+    (detailResponse.data.data.detail_images || []).every((item) => String(item).startsWith('/assets/images/products/')),
     JSON.stringify(detailResponse.data.data.detail_images),
   );
 
   const categoriesResponse = await api.get('/api/products/categories/tree');
   assert.equal(categoriesResponse.status, 200, JSON.stringify(categoriesResponse.data));
   assert.equal(categoriesResponse.data.code, 'Success', JSON.stringify(categoriesResponse.data));
+  const topLevelIcons = (Array.isArray(categoriesResponse.data.data) ? categoriesResponse.data.data : [])
+    .map((item) => String(item.icon_url || item.thumbnail || ''))
+    .filter(Boolean);
   assert.ok(
     collectTreeImages(categoriesResponse.data.data).every((item) => !item.includes('example.com')),
     JSON.stringify(categoriesResponse.data.data),
   );
+  assert.ok(new Set(topLevelIcons).size >= 2, JSON.stringify(topLevelIcons));
+  assert.ok(
+    collectTreeImages(categoriesResponse.data.data).every((item) => item.startsWith('/assets/images/categories/')),
+    JSON.stringify(categoriesResponse.data.data),
+  );
+  const freshCategory = (categoriesResponse.data.data || []).find((item) => Number(item.id) === 1);
+  const freshChildIcons = Array.isArray(freshCategory && freshCategory.children)
+    ? freshCategory.children.map((item) => String(item.icon_url || item.thumbnail || '')).filter(Boolean)
+    : [];
+  assert.ok(freshChildIcons.length >= 3, JSON.stringify(freshCategory));
+  assert.equal(new Set(freshChildIcons).size, freshChildIcons.length, JSON.stringify(freshChildIcons));
 });
 
 test('order and comment endpoints replace placeholder example.com images', async () => {
@@ -143,4 +181,79 @@ test('order and comment endpoints replace placeholder example.com images', async
     ),
     JSON.stringify(commentsResponse.data.data.list),
   );
+});
+
+test('cart endpoint replaces placeholder example.com images', async () => {
+  const token = await login();
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const addCartResponse = await api.post(
+    '/api/cart/add',
+    {
+      skuId: 1,
+      quantity: 1,
+    },
+    { headers },
+  );
+  assert.equal(addCartResponse.status, 201, JSON.stringify(addCartResponse.data));
+  assert.equal(addCartResponse.data.code, 'Success', JSON.stringify(addCartResponse.data));
+  assert.ok(
+    !String(
+      addCartResponse.data.data &&
+        addCartResponse.data.data.sku &&
+        addCartResponse.data.data.sku.spu &&
+        addCartResponse.data.data.sku.spu.primary_image,
+    ).includes('example.com'),
+    JSON.stringify(addCartResponse.data),
+  );
+
+  const cartListResponse = await api.get('/api/cart/list', { headers });
+  assert.equal(cartListResponse.status, 200, JSON.stringify(cartListResponse.data));
+  assert.equal(cartListResponse.data.code, 'Success', JSON.stringify(cartListResponse.data));
+  assert.ok(Array.isArray(cartListResponse.data.data.items));
+  assert.ok(
+    cartListResponse.data.data.items.every((item) =>
+      !String(item && item.sku && item.sku.spu ? item.sku.spu.primary_image || '' : '').includes('example.com'),
+    ),
+    JSON.stringify(cartListResponse.data.data.items),
+  );
+  assert.ok(
+    cartListResponse.data.data.items.every((item) =>
+      String(item && item.sku && item.sku.spu ? item.sku.spu.primary_image || '' : '').startsWith(
+        '/assets/images/products/',
+      ),
+    ),
+    JSON.stringify(cartListResponse.data.data.items),
+  );
+});
+
+test('admin product endpoints replace placeholder example.com images', async () => {
+  const token = await loginAdmin();
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const productListResponse = await api.get('/api/admin/products', { headers });
+  assert.equal(productListResponse.status, 200, JSON.stringify(productListResponse.data));
+  assert.equal(productListResponse.data.code, 'Success', JSON.stringify(productListResponse.data));
+  assert.ok(Array.isArray(productListResponse.data.data));
+  assert.ok(
+    productListResponse.data.data.every((item) => !String(item.primary_image || '').includes('example.com')),
+    JSON.stringify(productListResponse.data.data),
+  );
+  assert.ok(
+    productListResponse.data.data.every((item) => String(item.primary_image || '').startsWith('/assets/images/products/')),
+    JSON.stringify(productListResponse.data.data),
+  );
+
+  const firstProductId = productListResponse.data.data[0] && productListResponse.data.data[0].id;
+  assert.ok(firstProductId, JSON.stringify(productListResponse.data.data));
+
+  const productDetailResponse = await api.get(`/api/admin/products/${firstProductId}`, { headers });
+  assert.equal(productDetailResponse.status, 200, JSON.stringify(productDetailResponse.data));
+  assert.equal(productDetailResponse.data.code, 'Success', JSON.stringify(productDetailResponse.data));
+  assert.ok(!String(productDetailResponse.data.data.primary_image || '').includes('example.com'));
+  assert.ok(String(productDetailResponse.data.data.primary_image || '').startsWith('/assets/images/products/'));
 });

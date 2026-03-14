@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { ProductSpus, ProductSkus, Category, sequelize } = require('../models');
+const { IMAGE_SCENES, normalizeImageList, normalizeImageUrl } = require('../utils/image');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
 function stringifyJson(value) {
@@ -8,6 +9,26 @@ function stringifyJson(value) {
   }
 
   return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+function parseMaybeJson(value) {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
 }
 
 function parsePrice(value) {
@@ -25,6 +46,17 @@ function summarizeSkuMetrics(skus = []) {
     maxLinePrice: linePrices.length ? Math.max(...linePrices) : null,
     totalStock: skus.reduce((sum, sku) => sum + Number(sku.stock || 0), 0),
   };
+}
+
+function normalizeAdminProductPayload(product) {
+  const normalized = product && typeof product.toJSON === 'function' ? product.toJSON() : { ...(product || {}) };
+
+  normalized.primary_image = normalizeImageUrl(normalized.primary_image, IMAGE_SCENES.product);
+  normalized.detail_images = JSON.stringify(
+    normalizeImageList(parseMaybeJson(normalized.detail_images), IMAGE_SCENES.product),
+  );
+
+  return normalized;
 }
 
 class AdminProductController {
@@ -71,7 +103,7 @@ class AdminProductController {
         distinct: true,
       });
 
-      return paginatedResponse(res, 200, '获取成功', rows, {
+      return paginatedResponse(res, 200, '获取成功', rows.map((row) => normalizeAdminProductPayload(row)), {
         total: count,
         page: Number(page),
         pageSize: Number(pageSize),
@@ -104,7 +136,7 @@ class AdminProductController {
         return errorResponse(res, 404, 'ProductNotFound', '商品不存在');
       }
 
-      return successResponse(res, 200, '获取成功', product);
+      return successResponse(res, 200, '获取成功', normalizeAdminProductPayload(product));
     } catch (error) {
       next(error);
     }
@@ -134,11 +166,10 @@ class AdminProductController {
 
       if (!Array.isArray(skus) || skus.length === 0) {
         await transaction.rollback();
-        return errorResponse(res, 400, 'InvalidParam', '至少需要一个 SKU');
+        return errorResponse(res, 400, 'InvalidParam', '至少需要一个SKU');
       }
 
       const category = await Category.findByPk(categoryId, { transaction });
-
       if (!category) {
         await transaction.rollback();
         return errorResponse(res, 400, 'InvalidParam', '分类不存在');
@@ -152,6 +183,7 @@ class AdminProductController {
         specs: stringifyJson(sku.specs),
       }));
       const summary = summarizeSkuMetrics(normalizedSkus);
+
       const spu = await ProductSpus.create(
         {
           spu_code: `SPU${Date.now()}`,
@@ -229,7 +261,6 @@ class AdminProductController {
 
       if (categoryId && Number(categoryId) !== Number(product.category_id)) {
         const category = await Category.findByPk(categoryId, { transaction });
-
         if (!category) {
           await transaction.rollback();
           return errorResponse(res, 400, 'InvalidParam', '分类不存在');
@@ -237,7 +268,6 @@ class AdminProductController {
       }
 
       const updateData = {};
-
       if (title !== undefined) updateData.title = title;
       if (subtitle !== undefined) updateData.subtitle = subtitle;
       if (categoryId !== undefined) updateData.category_id = categoryId;
@@ -292,7 +322,6 @@ class AdminProductController {
           transaction,
         });
         const summary = summarizeSkuMetrics(refreshedSkus.map((sku) => sku.toJSON()));
-
         updateData.min_sale_price = summary.minSalePrice;
         updateData.max_line_price = summary.maxLinePrice;
         updateData.total_stock = summary.totalStock;

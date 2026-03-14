@@ -1,5 +1,5 @@
 const { normalizeFenAmount } = require('./shop-adapters');
-const { normalizeImageUrl } = require('./image-helpers');
+const { IMAGE_SCENES, normalizeImageUrl } = require('./image-helpers');
 
 const BACKEND_TO_ADMIN_STATUS = {
   1: 5,
@@ -112,7 +112,7 @@ function adaptAdminGoodsListResponse(response = {}) {
       id: item.id,
       name: item.title || '',
       category: item.category && item.category.category_name ? item.category.category_name : '',
-      image: normalizeImageUrl(item.primary_image || ''),
+      image: normalizeImageUrl(item.primary_image || '', IMAGE_SCENES.product),
       spec: extraFields.spec,
       brand: item.brand || '',
       price: normalizeFenAmount(item.min_sale_price || firstSku.price || 0),
@@ -132,7 +132,7 @@ function adaptAdminGoodsDetailResponse(response = {}) {
     id: item.id,
     name: item.title || '',
     category: item.category && item.category.category_name ? item.category.category_name : '',
-    image: normalizeImageUrl(item.primary_image || ''),
+    image: normalizeImageUrl(item.primary_image || '', IMAGE_SCENES.product),
     spec: extraFields.spec,
     brand: item.brand || '',
     productionDate: extraFields.productionDate,
@@ -207,7 +207,7 @@ function adaptAdminOrderDetailResponse(response = {}) {
 
         return {
           name: item.product_title || '',
-          image: normalizeImageUrl(item.product_image || ''),
+          image: normalizeImageUrl(item.product_image || '', IMAGE_SCENES.product),
           spec: firstSpecText(specs),
           price: normalizeFenAmount(item.price || 0),
           quantity: Number(item.quantity || 0),
@@ -239,7 +239,7 @@ function adaptAdminUsersListResponse(response = {}) {
   return list.map((user) => ({
     id: user.id,
     nickName: user.nickname || user.username || '',
-    avatarUrl: user.avatar_url || '',
+    avatarUrl: normalizeImageUrl(user.avatar_url || '', IMAGE_SCENES.avatar),
     phoneNumber: user.phone || '',
     totalOrders: Number(user.total_orders || 0),
     totalSpent: normalizeFenAmount(user.total_spent || 0),
@@ -263,7 +263,7 @@ function adaptAdminUserDetailResponse(response = {}) {
   return {
     id: user.id,
     nickName: user.nickname || user.username || '',
-    avatarUrl: user.avatar_url || '',
+    avatarUrl: normalizeImageUrl(user.avatar_url || '', IMAGE_SCENES.avatar),
     phoneNumber: user.phone || '',
     email: user.email || '',
     totalOrders: Number(user.total_orders || 0),

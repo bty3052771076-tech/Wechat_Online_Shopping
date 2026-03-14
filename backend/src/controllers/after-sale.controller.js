@@ -1,5 +1,6 @@
 const { Order, OrderItem, User } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
+const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
 const {
   buildStates,
   createAfterSale,
@@ -94,7 +95,7 @@ class AfterSaleController {
         numOfSkuAvailable: Number(item.quantity || 1),
         goodsInfo: {
           goodsName: item.product_title,
-          skuImage: item.product_image,
+          skuImage: normalizeImageUrl(item.product_image, IMAGE_SCENES.product),
           specInfo: parseSpecInfo(item.sku_spec_info),
         },
       });
@@ -179,12 +180,14 @@ class AfterSaleController {
         rightsStatus: 10,
         createTime: formatDateTime(new Date()),
         refundMemo: String(refundMemo || ''),
-        rightsImageUrls: Array.isArray(rightsImageUrls) ? rightsImageUrls : [],
+        rightsImageUrls: (Array.isArray(rightsImageUrls) ? rightsImageUrls : []).map((item) =>
+          normalizeImageUrl(item, IMAGE_SCENES.comment),
+        ),
         goodsItems: items.map((item) => ({
           skuId: item.skuId,
           spuId: item.spuId,
           goodsName: orderItem.product_title,
-          goodsPictureUrl: orderItem.product_image,
+          goodsPictureUrl: normalizeImageUrl(orderItem.product_image, IMAGE_SCENES.product),
           specInfo,
           itemRefundAmount: Number(item.itemTotalAmount || refundAmount),
           rightsQuantity: Number(item.rightsQuantity || 1),
