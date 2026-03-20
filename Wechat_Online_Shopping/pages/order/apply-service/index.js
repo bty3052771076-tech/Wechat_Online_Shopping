@@ -9,6 +9,7 @@ import {
   fetchApplyReasonList,
   dispatchApplyService,
 } from '../../../services/order/applyService';
+const { buildAfterSaleSubmitPayload } = require('../../../services/_utils/page-contract-helpers');
 
 Page({
   query: {},
@@ -357,25 +358,12 @@ Page({
   // 发起申请售后请求
   onSubmit() {
     this.submitCheck().then(() => {
-      const params = {
-        rights: {
-          orderNo: this.query.orderNo,
-          refundRequestAmount: this.data.serviceFrom.amount.current,
-          rightsImageUrls: this.data.serviceFrom.rightsImageUrls,
-          rightsReasonDesc: this.data.serviceFrom.applyReason.desc,
-          rightsReasonType: this.data.serviceFrom.receiptStatus.status,
-          rightsType: this.data.serviceType,
-        },
-        rightsItem: [
-          {
-            itemTotalAmount: this.data.goodsInfo.paidAmountEach * this.data.serviceFrom.returnNum,
-            rightsQuantity: this.data.serviceFrom.returnNum,
-            skuId: this.query.skuId,
-            spuId: this.query.spuId,
-          },
-        ],
-        refundMemo: this.data.serviceFrom.remark,
-      };
+      const params = buildAfterSaleSubmitPayload({
+        query: this.query,
+        serviceType: this.data.serviceType,
+        serviceFrom: this.data.serviceFrom,
+        goodsInfo: this.data.goodsInfo,
+      });
       this.setData({ submitting: true });
       // 发起申请售后请求
       dispatchApplyService(params)

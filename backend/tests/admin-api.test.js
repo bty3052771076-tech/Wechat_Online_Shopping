@@ -203,5 +203,5 @@ test('after-sales support list, detail and audit flows through admin API', async
 
   assert.equal(auditResponse.status, 200, JSON.stringify(auditResponse.data));
   assert.equal(auditResponse.data.code, 'Success', JSON.stringify(auditResponse.data));
-  assert.equal(auditResponse.data.data.status, 50);
+  assert.equal(auditResponse.data.data.status, 20);
 });

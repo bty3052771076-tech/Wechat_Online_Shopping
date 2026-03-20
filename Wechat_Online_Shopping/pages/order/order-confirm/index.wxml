@@ -68,7 +68,9 @@
         data-storeid="{{settleDetailData.storeGoodsList[0].storeId}}"
         catchtap="onOpenCoupons"
       >
-        <block wx:if="{{submitCouponList.length}}">
+        <block
+          wx:if="{{settleDetailData.storeGoodsList[0] && settleDetailData.storeGoodsList[0].couponList && settleDetailData.storeGoodsList[0].couponList.length}}"
+        >
           <block wx:if="{{settleDetailData.totalCouponAmount && settleDetailData.totalCouponAmount !== '0'}}">
             -<price fill decimalSmaller price="{{settleDetailData.totalCouponAmount}}" />
           </block>

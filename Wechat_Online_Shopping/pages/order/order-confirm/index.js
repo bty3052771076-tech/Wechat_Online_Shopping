@@ -4,6 +4,7 @@ import { commitPay, wechatPayOrder } from './pay';
 import { getAddressPromise } from '../../../services/address/list';
 
 const { parseGoodsRequestListParam } = require('../../../services/_utils/order-query-helpers');
+const { buildOrderConfirmCouponDialogState } = require('../../../services/_utils/page-contract-helpers');
 
 const stripeImg = `https://tdesign.gtimg.com/miniprogram/template/retail/order/stripe.png`;
 
@@ -200,6 +201,8 @@ Page({
     const orderCardList = []; // 订单卡片列表
     const storeInfoList = [];
     const submitCouponList = []; //使用优惠券列表;
+    this.noteInfo = [];
+    this.tempNoteInfo = [];
 
     data.storeGoodsList &&
       data.storeGoodsList.forEach((ele) => {
@@ -487,19 +490,29 @@ Page({
     const { selectedList } = e.detail;
     const tempSubmitCouponList = submitCouponList.map((storeCoupon) => {
       return {
+        storeId: storeCoupon.storeId,
         couponList: storeCoupon.storeId === currentStoreId ? selectedList : storeCoupon.couponList,
       };
     });
     const resSubmitCouponList = this.handleCouponList(tempSubmitCouponList);
     //确定选择优惠券
     this.handleOptionsParams({ goodsRequestList }, resSubmitCouponList);
-    this.setData({ couponsShow: false });
+    this.setData({
+      couponsShow: false,
+      submitCouponList: tempSubmitCouponList,
+      couponList: selectedList,
+    });
   },
   onOpenCoupons(e) {
     const { storeid } = e.currentTarget.dataset;
+    const couponDialogState = buildOrderConfirmCouponDialogState({
+      storeId: storeid,
+      orderCardList: this.data.orderCardList,
+      submitCouponList: this.data.submitCouponList,
+    });
     this.setData({
       couponsShow: true,
-      currentStoreId: storeid,
+      ...couponDialogState,
     });
   },
 

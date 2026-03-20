@@ -182,6 +182,7 @@ class OrderController {
         order: [['created_at', 'DESC']],
         limit: pageSize,
         offset,
+        distinct: true,
       });
 
       const formattedOrders = orders.map((order) => {

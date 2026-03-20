@@ -79,12 +79,12 @@ async function createAddress(token) {
   return response.data.data.id;
 }
 
-async function createOrder(token) {
+async function createOrder(token, items = [{ skuId: 1, quantity: 1 }]) {
   const addressId = await createAddress(token);
   const response = await api.post(
     '/api/orders/create',
     {
-      items: [{ skuId: 1, quantity: 1 }],
+      items,
       addressId,
       remark: 'order-actions-api',
     },
@@ -172,4 +172,29 @@ test('user can cancel an unpaid order through /api/orders/:orderNo/cancel', asyn
   assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
   assert.equal(response.data.data.orderNo, orderNo);
   assert.equal(response.data.data.orderStatus, 6);
+});
+
+test('GET /api/orders/list counts unique orders when an order has multiple items', async () => {
+  const token = await login();
+  await createOrder(token, [
+    { skuId: 1, quantity: 1 },
+    { skuId: 2, quantity: 1 },
+  ]);
+
+  const response = await api.get('/api/orders/list', {
+    params: {
+      page: 1,
+      pageSize: 200,
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  assert.equal(response.status, 200, JSON.stringify(response.data));
+  assert.equal(response.data.code, 'Success', JSON.stringify(response.data));
+  assert.ok(Array.isArray(response.data.data.list));
+
+  const uniqueOrderIds = new Set(response.data.data.list.map((item) => item.id));
+  assert.equal(response.data.data.pagination.total, uniqueOrderIds.size);
 });

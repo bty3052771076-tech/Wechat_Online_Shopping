@@ -1,7 +1,10 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import { ServiceType, ServiceTypeDesc, ServiceStatus } from '../config';
 import { formatTime, getRightsDetail } from './api';
-const { buildAfterServiceDetailViewModel } = require('../../../services/_utils/page-contract-helpers');
+const {
+  buildAfterServiceDetailViewModel,
+  createEmptyAfterServiceDetailViewModel,
+} = require('../../../services/_utils/page-contract-helpers');
 
 const TitleConfig = {
   [ServiceType.ORDER_CANCEL]: '退款详情',
@@ -14,7 +17,7 @@ Page({
     pullDownRefreshing: false,
     pageLoading: true,
     serviceRaw: {},
-    service: {},
+    service: createEmptyAfterServiceDetailViewModel(),
     deliveryButton: {},
     gallery: {
       current: 0,
@@ -63,7 +66,7 @@ Page({
       if (!serviceRaw) {
         this.setData({
           serviceRaw: {},
-          service: {},
+          service: createEmptyAfterServiceDetailViewModel(),
           pageLoading: false,
         });
         return;

@@ -1,7 +1,11 @@
-import dayjs from 'dayjs';
 import { couponsData } from './mock';
 
-const { normalizeCouponDialogStoreId } = require('../../../../services/_utils/page-contract-helpers');
+const {
+  buildCouponDialogData,
+  buildCouponSelectionPayload,
+  normalizeCouponDialogStoreId,
+  shouldUseCouponDialogMockData,
+} = require('../../../../services/_utils/page-contract-helpers');
 
 const emptyCouponImg = `https://tdesign.gtimg.com/miniprogram/template/retail/coupon/ordersure-coupon-newempty.png`;
 
@@ -63,35 +67,7 @@ Component({
   },
   methods: {
     initData(data = {}) {
-      const { couponResultList = [], reduce = 0 } = data;
-      const selectedList = [];
-      let selectedNum = 0;
-      const couponsList =
-        couponResultList &&
-        couponResultList.map((coupon) => {
-          const { status, couponVO } = coupon;
-          const { couponId, condition = '', endTime = 0, name = '', startTime = 0, value, type } = couponVO;
-          if (status === 1) {
-            selectedNum++;
-            selectedList.push({
-              couponId,
-              promotionId: ruleId,
-              storeId: this.storeId,
-            });
-          }
-          const val = type === 2 ? value / 100 : value / 10;
-          return {
-            key: couponId,
-            title: name,
-            isSelected: false,
-            timeLimit: `${dayjs(+startTime).format('YYYY-MM-DD')}-${dayjs(+endTime).format('YYYY-MM-DD')}`,
-            value: val,
-            status: status === -1 ? 'useless' : 'default',
-            desc: condition,
-            type,
-            tag: '',
-          };
-        });
+      const { selectedList, couponsList, reduce, selectedNum } = buildCouponDialogData(data, this.storeId);
       this.setData({
         selectedList,
         couponsList,
@@ -108,15 +84,18 @@ Component({
         }
       });
 
-      const couponSelected = couponsList.filter((coupon) => coupon.isSelected === true);
+      const couponSelected = couponsList
+        .filter((coupon) => coupon.isSelected === true)
+        .map((coupon) => buildCouponSelectionPayload(coupon, this.storeId));
 
       this.setData({
-        selectedList: [...selectedList, ...couponSelected],
+        selectedList: couponSelected,
         couponsList: [...couponsList],
+        selectedNum: couponSelected.length,
       });
 
       this.triggerEvent('sure', {
-        selectedList: [...selectedList, ...couponSelected],
+        selectedList: couponSelected,
       });
     },
     hide() {
@@ -125,16 +104,18 @@ Component({
       });
     },
     coupons(coupon = {}) {
-      return new Promise((resolve, reject) => {
-        if (coupon?.selectedCoupons) {
+      return new Promise((resolve) => {
+        if (shouldUseCouponDialogMockData(coupon && coupon.selectedCoupons)) {
           resolve({
             couponResultList: couponsData.couponResultList,
             reduce: couponsData.reduce,
           });
+          return;
         }
-        return reject({
+
+        resolve({
           couponResultList: [],
-          reduce: undefined,
+          reduce: 0,
         });
       });
     },

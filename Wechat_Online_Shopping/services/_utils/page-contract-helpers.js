@@ -13,8 +13,128 @@ function toSafeAmount(value) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
+function toSafeInteger(value, fallback = 0) {
+  const amount = Number.parseInt(value, 10);
+  return Number.isFinite(amount) ? amount : fallback;
+}
+
 function normalizeCouponDialogStoreId(value) {
   return toSafeString(value).trim();
+}
+
+function formatCouponDate(value) {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const date = new Date(Number(value));
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function resolveCouponPromotionId(coupon = {}) {
+  if (coupon.promotionId !== null && coupon.promotionId !== undefined && coupon.promotionId !== '') {
+    return coupon.promotionId;
+  }
+
+  if (coupon.promotionCode !== null && coupon.promotionCode !== undefined && coupon.promotionCode !== '') {
+    return coupon.promotionCode;
+  }
+
+  return '';
+}
+
+function buildCouponSelectionPayload(coupon = {}, storeId = '') {
+  return {
+    couponId: coupon.couponId !== undefined ? coupon.couponId : coupon.key,
+    promotionId: resolveCouponPromotionId(coupon),
+    storeId: normalizeCouponDialogStoreId(storeId || coupon.storeId),
+    status: coupon.status || 'default',
+    type: coupon.type,
+    value: coupon.value,
+    title: toSafeString(coupon.title || coupon.name),
+    desc: toSafeString(coupon.desc || coupon.condition),
+  };
+}
+
+function buildCouponDialogData(data = {}, storeId = '') {
+  const { couponResultList = [], reduce = 0 } = data;
+  const normalizedStoreId = normalizeCouponDialogStoreId(storeId);
+  const couponsList = Array.isArray(couponResultList)
+    ? couponResultList
+        .map((coupon) => {
+          const couponVO = coupon && coupon.couponVO ? coupon.couponVO : {};
+          const couponId = couponVO.couponId;
+          const type = couponVO.type;
+          const value = type === 2 ? toSafeAmount(couponVO.value) / 100 : toSafeAmount(couponVO.value) / 10;
+
+          if (couponId === null || couponId === undefined) {
+            return null;
+          }
+
+          return {
+            key: couponId,
+            couponId,
+            promotionId: resolveCouponPromotionId(couponVO),
+            storeId: normalizedStoreId,
+            title: toSafeString(couponVO.name),
+            isSelected: coupon && coupon.status === 1,
+            timeLimit: `${formatCouponDate(couponVO.startTime)}-${formatCouponDate(couponVO.endTime)}`,
+            value,
+            status: coupon && coupon.status === -1 ? 'useless' : 'default',
+            desc: toSafeString(couponVO.condition),
+            type,
+            tag: '',
+          };
+        })
+        .filter(Boolean)
+    : [];
+  const selectedList = couponsList
+    .filter((coupon) => coupon.isSelected)
+    .map((coupon) => buildCouponSelectionPayload(coupon, normalizedStoreId));
+
+  return {
+    couponsList,
+    selectedList,
+    reduce: toSafeAmount(reduce),
+    selectedNum: selectedList.length,
+  };
+}
+
+function buildOrderConfirmCouponDialogState({ storeId = '', orderCardList = [], submitCouponList = [] } = {}) {
+  const fallbackStoreId =
+    normalizeCouponDialogStoreId(storeId) ||
+    normalizeCouponDialogStoreId(
+      (orderCardList[0] && (orderCardList[0].storeId || orderCardList[0].id)) ||
+        (submitCouponList[0] && submitCouponList[0].storeId),
+    );
+  const currentOrderCard = Array.isArray(orderCardList)
+    ? orderCardList.find(
+        (card) => normalizeCouponDialogStoreId(card && (card.storeId || card.id)) === fallbackStoreId,
+      )
+    : null;
+  const currentStoreCoupon = Array.isArray(submitCouponList)
+    ? submitCouponList.find((coupon) => normalizeCouponDialogStoreId(coupon && coupon.storeId) === fallbackStoreId)
+    : null;
+
+  return {
+    currentStoreId: fallbackStoreId,
+    promotionGoodsList:
+      currentOrderCard && Array.isArray(currentOrderCard.goodsList) ? currentOrderCard.goodsList : [],
+    couponList: currentStoreCoupon && Array.isArray(currentStoreCoupon.couponList) ? currentStoreCoupon.couponList : [],
+  };
+}
+
+function shouldUseCouponDialogMockData(selectedCoupons = []) {
+  return Array.isArray(selectedCoupons) && selectedCoupons.length > 0;
 }
 
 function normalizeCreateTime(value, formatTime) {
@@ -42,6 +162,41 @@ function composeAddress(logistics = {}) {
     .join(' ');
 }
 
+function createEmptyAfterServiceDetailViewModel() {
+  return {
+    id: '',
+    serviceNo: '',
+    storeName: '',
+    type: null,
+    typeDesc: '',
+    status: null,
+    statusIcon: '',
+    statusName: '',
+    statusDesc: '',
+    amount: 0,
+    goodsList: [],
+    orderNo: '',
+    rightsNo: '',
+    rightsReasonDesc: '',
+    isRefunded: false,
+    refundMethodList: [],
+    refundRequestAmount: 0,
+    payTraceNo: '',
+    createTime: '',
+    logisticsNo: '',
+    logisticsCompanyName: '',
+    logisticsCompanyCode: '',
+    remark: '',
+    receiverName: '',
+    receiverPhone: '',
+    receiverAddress: '',
+    applyRemark: '',
+    buttons: [],
+    logistics: {},
+    proofs: [],
+  };
+}
+
 function buildAfterServiceDetailViewModel(
   serviceRaw = {},
   { formatTime, getStatusIcon, serviceTypeDesc = {}, refundedStatus } = {},
@@ -58,6 +213,7 @@ function buildAfterServiceDetailViewModel(
     : [];
 
   return {
+    ...createEmptyAfterServiceDetailViewModel(),
     id: toSafeString(rights.rightsNo),
     serviceNo: toSafeString(rights.rightsNo),
     storeName: toSafeString(rights.storeName),
@@ -108,7 +264,39 @@ function buildAfterServiceDetailViewModel(
   };
 }
 
+function buildAfterSaleSubmitPayload({ query = {}, serviceType = null, serviceFrom = {}, goodsInfo = {} } = {}) {
+  const applyReason = serviceFrom.applyReason || {};
+  const amount = serviceFrom.amount || {};
+  const returnNum = toSafeInteger(serviceFrom.returnNum, 1);
+
+  return {
+    rights: {
+      orderNo: toSafeString(query.orderNo),
+      refundRequestAmount: toSafeAmount(amount.current),
+      rightsImageUrls: Array.isArray(serviceFrom.rightsImageUrls) ? serviceFrom.rightsImageUrls : [],
+      rightsReasonDesc: toSafeString(applyReason.desc),
+      rightsReasonType: toSafeInteger(applyReason.type),
+      rightsType: serviceType,
+    },
+    rightsItem: [
+      {
+        itemTotalAmount: toSafeAmount(goodsInfo.paidAmountEach) * returnNum,
+        rightsQuantity: returnNum,
+        skuId: toSafeString(query.skuId),
+        spuId: toSafeString(query.spuId),
+      },
+    ],
+    refundMemo: toSafeString(serviceFrom.remark),
+  };
+}
+
 module.exports = {
   normalizeCouponDialogStoreId,
+  buildCouponDialogData,
+  buildCouponSelectionPayload,
+  buildOrderConfirmCouponDialogState,
+  shouldUseCouponDialogMockData,
+  createEmptyAfterServiceDetailViewModel,
+  buildAfterSaleSubmitPayload,
   buildAfterServiceDetailViewModel,
 };

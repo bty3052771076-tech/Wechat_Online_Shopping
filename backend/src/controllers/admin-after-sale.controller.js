@@ -61,8 +61,9 @@ class AdminAfterSaleController {
       return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
     }
 
+    const nextStatus = approved ? (Number(detail.rightsType) === 10 ? 20 : 50) : 60;
     const updated = updateAfterSale(id, {
-      rightsStatus: approved ? 50 : 60,
+      rightsStatus: nextStatus,
     });
 
     return successResponse(res, 200, '处理成功', {
