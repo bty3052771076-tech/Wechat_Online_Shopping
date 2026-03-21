@@ -1,0 +1,10 @@
+<view class="product-card" bind:tap="onTapView">
+  <image class="product-image" src="{{product.image}}" mode="aspectFill" />
+  <view class="product-info">
+    <text class="product-title">{{product.title}}</text>
+    <text class="product-price">¥{{product.priceYuan}}</text>
+  </view>
+  <view class="product-action">
+    <text class="btn-view">去看看</text>
+  </view>
+</view>

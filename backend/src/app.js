@@ -11,6 +11,7 @@ const productRoutes = require('./routes/product');
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/order');
 const addressRoutes = require('./routes/address');
+const agentRoutes = require('./routes/agent');
 const sequelize = require('./config/database');
 
 require('./models');
@@ -38,6 +39,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/agent', agentRoutes);
 
 app.get('/health', (req, res) => {
   res.json({

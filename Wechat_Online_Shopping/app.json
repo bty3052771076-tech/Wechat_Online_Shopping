@@ -46,6 +46,11 @@
       "pages": ["promotion-detail/index"]
     },
     {
+      "root": "pages/ai-agent",
+      "name": "ai-agent",
+      "pages": ["chat/index"]
+    },
+    {
       "root": "pages/admin",
       "name": "admin",
       "pages": [

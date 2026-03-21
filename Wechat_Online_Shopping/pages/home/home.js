@@ -180,4 +180,14 @@ Page({
   goToAdminLogin() {
     wx.navigateTo({ url: '/pages/admin/login/index' });
   },
+
+  // AI 购物助手入口
+  onAiAgentTap() {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.navigateTo({ url: '/pages/user/login/index' });
+      return;
+    }
+    wx.navigateTo({ url: '/pages/ai-agent/chat/index' });
+  },
 });

@@ -105,3 +105,23 @@ page {
   --td-tab-item-color: #666;
   --td-tab-track-color: red;
 }
+
+/* AI 购物助手悬浮按钮 */
+.ai-fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(200rpx + env(safe-area-inset-bottom));
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1677ff, #4096ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(22, 119, 255, 0.4);
+  z-index: 100;
+}
+
+.ai-fab-icon {
+  font-size: 48rpx;
+}

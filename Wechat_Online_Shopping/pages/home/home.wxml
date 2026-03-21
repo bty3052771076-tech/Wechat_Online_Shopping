@@ -61,3 +61,7 @@
   <load-more list-is-empty="{{!goodsList.length}}" status="{{goodsListLoadStatus}}" bind:retry="onReTry" />
   <t-toast id="t-toast" />
 </view>
+<!-- AI 购物助手悬浮按钮 -->
+<view class="ai-fab" bind:tap="onAiAgentTap">
+  <text class="ai-fab-icon">🤖</text>
+</view>

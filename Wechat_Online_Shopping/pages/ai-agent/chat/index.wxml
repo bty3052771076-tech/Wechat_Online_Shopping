@@ -1,0 +1,69 @@
+<!-- AI 购物助手聊天页 -->
+<view class="chat-page">
+  <!-- 消息列表 -->
+  <scroll-view
+    class="msg-list"
+    scroll-y
+    scroll-into-view="{{scrollTarget}}"
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <!-- 欢迎提示 -->
+    <view class="welcome" wx:if="{{messages.length === 0 && !loading}}">
+      <text class="welcome-title">👋 你好，我是 AI 购物助手</text>
+      <text class="welcome-desc">我可以帮你搜索商品、比较价格、推荐好物，试试问我吧！</text>
+      <view class="quick-questions">
+        <view class="quick-btn" wx:for="{{quickQuestions}}" wx:key="index" bind:tap="onQuickQuestion" data-q="{{item}}">
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 消息气泡 -->
+    <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg-row {{item.role === 'user' ? 'msg-right' : 'msg-left'}}">
+      <view class="bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-bot'}}">
+        <text class="bubble-text">{{item.content}}</text>
+      </view>
+      <!-- 商品推荐卡片横向滚动 -->
+      <scroll-view
+        wx:if="{{item.products && item.products.length}}"
+        class="product-scroll"
+        scroll-x
+        enhanced
+        show-scrollbar="{{false}}"
+      >
+        <view class="product-scroll-inner">
+          <product-card wx:for="{{item.products}}" wx:for-item="prod" wx:key="id" product="{{prod}}" />
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 正在输入指示器 -->
+    <view wx:if="{{streaming}}" id="msg-typing" class="msg-row msg-left">
+      <view class="bubble bubble-bot typing">
+        <text class="dot" />
+        <text class="dot" />
+        <text class="dot" />
+      </view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view class="bottom-anchor" id="bottom-anchor" />
+  </scroll-view>
+
+  <!-- 输入区 -->
+  <view class="input-bar">
+    <input
+      class="input-field"
+      value="{{inputValue}}"
+      placeholder="输入你想找的商品或问题…"
+      confirm-type="send"
+      bind:input="onInput"
+      bind:confirm="onSend"
+      disabled="{{streaming}}"
+    />
+    <view class="send-btn {{inputValue ? 'active' : ''}}" bind:tap="onSend">
+      <text>发送</text>
+    </view>
+  </view>
+</view>

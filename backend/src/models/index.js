@@ -15,6 +15,8 @@ const ProductSpuTags = require('./ProductSpuTags');
 const ShoppingCart = require('./ShoppingCart');
 const User = require('./User');
 const UserAddress = require('./UserAddress');
+const ChatSession = require('./ChatSession');
+const ChatMessage = require('./ChatMessage');
 
 // 建立模型关联关系
 
@@ -64,9 +66,19 @@ ShoppingCart.belongsTo(ProductSkus, { foreignKey: 'sku_id', as: 'sku' });
 UserAddress.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(UserAddress, { foreignKey: 'user_id', as: 'addresses' });
 
+// ChatSession 和 User 的关联
+ChatSession.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+User.hasMany(ChatSession, { foreignKey: 'user_id', as: 'chatSessions' });
+
+// ChatMessage 和 ChatSession 的关联
+ChatMessage.belongsTo(ChatSession, { foreignKey: 'session_id', as: 'session' });
+ChatSession.hasMany(ChatMessage, { foreignKey: 'session_id', as: 'messages' });
+
 module.exports = {
   Admin,
   Category,
+  ChatMessage,
+  ChatSession,
   Order,
   OrderItem,
   OrderStatusLog,

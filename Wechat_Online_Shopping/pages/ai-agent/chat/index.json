@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "AI 购物助手",
+  "usingComponents": {
+    "product-card": "../components/product-card/index"
+  }
+}
