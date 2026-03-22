@@ -124,6 +124,7 @@ class AgentController {
 
       res.end();
     } catch (error) {
+      console.error('[Agent Chat Error]', error.message, error.stack);
       if (res.headersSent) {
         res.write(`event: error\ndata: ${JSON.stringify({ message: '抱歉，我暂时开小差了，请稍后再试' })}\n\n`);
         res.end();

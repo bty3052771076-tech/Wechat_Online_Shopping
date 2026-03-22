@@ -242,7 +242,8 @@ async function chatCompletionStream(messages, onDelta, onProducts) {
 
     let fullContent = '';
     for await (const chunk of stream) {
-      const delta = chunk.choices[0].delta.content || '';
+      // 防御性检查：部分模型的流式 chunk 可能缺少 choices 或 delta
+      const delta = chunk.choices?.[0]?.delta?.content || '';
       if (delta) {
         fullContent += delta;
         if (onDelta) onDelta(delta);

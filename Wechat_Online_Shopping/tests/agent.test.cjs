@@ -73,3 +73,43 @@ test('arrayBufferToString converts ASCII ArrayBuffer to string', () => {
   const result = arrayBufferToString(buf.buffer);
   assert.equal(result, 'hello world');
 });
+
+// ---- 补充测试 ----
+
+test('arrayBufferToString converts UTF-8 Chinese ArrayBuffer to string', () => {
+  // "你好" 的 UTF-8 编码: E4BDA0 E5A5BD
+  const bytes = new Uint8Array([0xE4, 0xBD, 0xA0, 0xE5, 0xA5, 0xBD]);
+  const result = arrayBufferToString(bytes.buffer);
+  assert.equal(result, '你好');
+});
+
+test('parseSSEEvent parses error event correctly', () => {
+  const chunk = 'event: error\ndata: {"message":"服务暂时不可用"}';
+  const result = parseSSEEvent(chunk);
+  assert.equal(result.event, 'error');
+  const data = JSON.parse(result.data);
+  assert.equal(data.message, '服务暂时不可用');
+});
+
+test('parseSSEEvent handles data with colons correctly', () => {
+  // data 字段中包含冒号（如 URL）
+  const chunk = 'event: delta\ndata: {"content":"链接: https://example.com"}';
+  const result = parseSSEEvent(chunk);
+  assert.equal(result.event, 'delta');
+  const data = JSON.parse(result.data);
+  assert.equal(data.content, '链接: https://example.com');
+});
+
+test('parseSSEEvent returns null for comment-only chunk', () => {
+  const chunk = ': this is a comment';
+  const result = parseSSEEvent(chunk);
+  assert.equal(result, null);
+});
+
+test('parseSSEEvent handles multiline data field', () => {
+  // SSE 标准中同一事件的 data 字段可以出现多次
+  const chunk = 'event: delta\ndata: {"content":"hello"}';
+  const result = parseSSEEvent(chunk);
+  assert.ok(result !== null);
+  assert.equal(result.event, 'delta');
+});
