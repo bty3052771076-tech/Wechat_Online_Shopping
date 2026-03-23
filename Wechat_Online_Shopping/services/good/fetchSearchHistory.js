@@ -20,6 +20,14 @@ function readSearchHistory() {
   return Array.isArray(history) ? history.filter(Boolean) : [];
 }
 
+/** 将给定的历史词数组写回本地存储（供删除操作调用） */
+export function saveSearchHistory(words) {
+  if (typeof wx === 'undefined' || typeof wx.setStorageSync !== 'function') {
+    return;
+  }
+  wx.setStorageSync(SEARCH_HISTORY_KEY, Array.isArray(words) ? words : []);
+}
+
 export function recordSearchKeyword(keyword) {
   const normalized = String(keyword || '').trim();
 

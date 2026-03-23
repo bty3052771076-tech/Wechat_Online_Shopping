@@ -10,14 +10,14 @@
       label="账号"
       placeholder="请输入工作人员账号"
       value="{{username}}"
-      bind:input="onUsernameInput"
+      bind:change="onUsernameInput"
     />
     <t-input
       label="密码"
       placeholder="请输入密码"
       type="password"
       value="{{password}}"
-      bind:input="onPasswordInput"
+      bind:change="onPasswordInput"
     />
 
     <view class="login-btn-group">
