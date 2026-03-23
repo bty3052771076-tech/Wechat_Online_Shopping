@@ -1,119 +1,177 @@
-<p align="center">
-  <a href="https://tdesign.tencent.com/" target="_blank">
-    <img alt="TDesign Logo" width="200" src="https://tdesign.gtimg.com/site/TDesign.png">
-  </a>
-</p>
+# 微信在线购物小程序
 
-<p align="center">
-  <a href="https://img.shields.io/github/stars/Tencent/tdesign-miniprogram-starter-retail">
-    <img src="https://img.shields.io/github/stars/Tencent/tdesign-miniprogram-starter-retail" alt="License">
-  </a>
-  <a href="https://github.com/Tencent/tdesign-miniprogram-starter-retail/issues">
-    <img src="https://img.shields.io/github/issues/Tencent/tdesign-miniprogram-starter-retail" alt="License">
-  </a>
-  <a href="https://github.com/Tencent/tdesign-miniprogram-starter-retail/LICENSE">
-    <img src="https://img.shields.io/github/license/Tencent/tdesign-miniprogram-starter-retail" alt="License">
-  </a>
-  <a href="https://www.npmjs.com/package/tdesign-miniprogram">
-    <img src="https://img.shields.io/npm/v/tdesign-miniprogram.svg?sanitize=true" alt="Version">
-  </a>
-  <a href="https://www.npmjs.com/package/tdesign-miniprogram">
-    <img src="https://img.shields.io/npm/dw/tdesign-miniprogram" alt="Downloads">
-  </a>
-</p>
+基于微信原生小程序（TDesign Weapp）+ Node.js 后端的完整电商系统，涵盖用户购物全链路、商家管理后台及 AI 购物助手。
 
-# TDesign 零售行业模版示例小程序
+---
 
-TDesign 零售模版示例小程序采用 [TDesign 企业级设计体系小程序解决方案](https://tdesign.tencent.com/miniprogram/overview) 进行搭建，依赖 [TDesign 微信小程序组件库](https://github.com/Tencent/tdesign-miniprogram)，涵盖完整的基本零售场景需求。
+## 项目介绍
 
-## :pushpin: 项目介绍
+### 功能模块
 
-### 1. 业务介绍
+| 模块 | 说明 |
+|------|------|
+| 商品浏览 | 首页、分类、商品详情、搜索、热门推荐 |
+| 购物车 | 加购、数量调整、选中结算 |
+| 订单 | 下单、支付、查看订单、确认收货、发票 |
+| 售后 | 申请退款/退货、售后进度跟踪 |
+| 个人中心 | 收货地址、优惠券、浏览历史 |
+| 管理后台 | 商品管理、订单管理、用户管理、售后处理、配送区域配置 |
+| AI 购物助手 | 自然语言对话式商品推荐（PPIO 大模型 + Function Calling） |
 
-零售行业模版小程序是个经典的单店版电商小程序，涵盖了电商的黄金链路流程，从商品->购物车->结算->订单等。小程序总共包含 28 个完整的页面，涵盖首页，商品详情页，个人中心，售后流程等基础页面。采用 mock 数据进行展示，提供了完整的零售商品展示、交易与售后流程。页面详情：
-
-<img src="https://tdesign.gtimg.com/miniprogram/template/retail/tdesign-starter-readmeV1.png" width = "650" height = "900" alt="模版小程序页面详情" align=center />
-
-主要页面截图如下：
-
-<p align="center">
-    <img alt="example-home" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/home.png" />
-    <img alt="example-sort" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v2/sort.png" />
-    <img alt="example-cart" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/cart.png" />
-    <img alt="example-user-center" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/user-center.png" />
-    <img alt="example-goods-detail" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/goods-detail.png" />
-    <img alt="example-pay" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/pay.png" />
-    <img alt="example-order" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v1/order.png" />
-    <img alt="example-order-detail" width="200" src="https://tdesign.gtimg.com/miniprogram/template/retail/example/v2/order.png" />
-</p>
-
-### 2. 项目构成
-
-零售行业模版小程序采用基础的 JavaScript + WXSS + ESLint 进行构建，降低了使用门槛。
-
-项目目录结构如下：
+### 页面结构
 
 ```
-|-- tdesign-miniprogram-starter
-    |-- README.md
-    |-- app.js
-    |-- app.json
-    |-- app.wxss
-    |-- components	//	公共组件库
-    |-- config	//	基础配置
-    |-- custom-tab-bar	//	自定义 tabbar
-    |-- model	//	mock 数据
-    |-- pages
-    |   |-- cart	//	购物车相关页面
-    |   |-- coupon	//	优惠券相关页面
-    |   |-- goods	//	商品相关页面
-    |   |-- home	//	首页
-    |   |-- order	//	订单售后相关页面
-    |   |-- promotion-detail	//	营销活动页面
-    |   |-- usercenter	//	个人中心及收货地址相关页面
-    |-- services	//	请求接口
-    |-- style	//	公共样式与iconfont
-    |-- utils	//	工具库
+pages/
+├── home/              首页
+├── category/          分类页
+├── goods/
+│   ├── details/       商品详情
+│   ├── search/        搜索（含历史记录）
+│   ├── result/        搜索结果
+│   └── comments/      商品评论
+├── cart/              购物车
+├── order/
+│   ├── order-confirm/ 确认下单
+│   ├── order-list/    订单列表
+│   ├── order-detail/  订单详情
+│   ├── pay-result/    支付结果
+│   ├── invoice/       发票
+│   ├── delivery-detail/ 物流详情
+│   ├── fill-tracking-no/ 填写运单号
+│   ├── receipt/       确认收货
+│   ├── after-service-list/  售后列表
+│   ├── after-service-detail/ 售后详情
+│   └── apply-service/ 申请售后
+├── coupon/            优惠券
+├── usercenter/        个人中心（含收货地址）
+├── admin/
+│   ├── login/         管理员登录
+│   ├── dashboard/     后台总览
+│   ├── goods-manage/  商品管理
+│   ├── order-manage/  订单管理
+│   ├── user-manage/   用户管理
+│   ├── after-sale-manage/ 售后管理
+│   └── delivery-manage/   配送区域管理
+└── ai-agent/
+    └── chat/          AI 购物助手对话页
 ```
 
-### 3. 数据模拟
+---
 
-零售小程序采用真实的接口数据，模拟后端返回逻辑，在小程序展示完整的购物场景与购物体验逻辑。
+## 技术栈
 
-### 4. 添加新页面
+| 层级 | 技术 |
+|------|------|
+| 前端 | 微信小程序（原生）+ TDesign Weapp |
+| 后端 | Node.js / Express + Sequelize ORM |
+| 数据库 | MySQL |
+| AI | PPIO API（OpenAI 兼容）+ Function Calling，SSE 流式输出 |
 
-1. 在 `pages `目录下创建对应的页面文件夹
-2. 在 `app.json` 文件中的 ` "pages"` 数组中加上页面路径
-3. [可选] 在 `project.config.json` 文件的 `"miniprogram-list"` 下添加页面配置
+---
 
-## :hammer: 构建运行
+## 项目结构
 
-1. `npm install`
-2. 小程序开发工具中引入工程
-3. 构建 npm
+```
+.
+├── Wechat_Online_Shopping/   # 小程序前端
+│   ├── pages/                # 页面
+│   ├── components/           # 公共组件
+│   ├── services/             # 接口调用层
+│   ├── model/                # Mock 数据
+│   ├── config/               # 基础配置（含 apiBaseURL、useMock 开关）
+│   ├── style/                # 公共样式与 iconfont
+│   └── tests/                # 前端单元测试（node --test）
+└── backend/                  # Node.js 后端
+    └── src/
+        ├── controllers/      # 业务控制器
+        ├── services/         # 业务逻辑（含 AI Agent）
+        ├── models/           # Sequelize 数据模型
+        ├── routes/           # Express 路由
+        ├── middlewares/      # JWT 鉴权等中间件
+        ├── config/           # 服务端配置（含 AI System Prompt）
+        └── validators/       # 参数校验
+```
 
-## :art: 代码风格控制
+---
 
-- `eslint`
-- `prettier`
+## 快速开始
 
-## :iphone: 基础库版本
+### 前置条件
 
-最低基础库版本`^2.6.5`
+- 微信开发者工具
+- Node.js >= 18
+- MySQL 8.x
 
-## :dart: 反馈
+### 前端
 
-有任何问题，建议通过 [Github issues](https://github.com/Tencent/tdesign-miniprogram/issues) 反馈或扫码加入用户微信群。
+1. 在微信开发者工具中导入 `Wechat_Online_Shopping/` 目录
+2. 修改 `config/index.js` 中的 `apiBaseURL` 指向后端地址
+3. 构建 npm（工具菜单 → 构建 npm）
 
-<img src="https://raw.githubusercontent.com/Tencent/tdesign/main/packages/site-components/src/images/groups/wx-group.png" width="200" />
+### 后端
 
-## :link: TDesign 其他技术栈实现
+```bash
+cd backend
+npm install
+# 配置环境变量（复制并填写）
+cp .env.example .env
+# 初始化数据库（确保 MySQL 已启动）
+npm run db:sync
+npm run dev
+```
 
-- 移动端 小程序 实现：[mobile-miniprogram](https://github.com/Tencent/tdesign-miniprogram)
-- 桌面端 Vue 2 实现：[web-vue](https://github.com/Tencent/tdesign-vue)
-- 桌面端 Vue 3 实现：[web-vue-next](https://github.com/Tencent/tdesign-vue-next)
-- 桌面端 React 实现：[web-react](https://github.com/Tencent/tdesign-react)
+### 环境变量（`backend/.env`）
 
-## :page_with_curl: 开源协议
+| 变量 | 说明 |
+|------|------|
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | MySQL 连接配置 |
+| `JWT_SECRET` | JWT 签名密钥 |
+| `PPIO_API_KEY` | PPIO 大模型 API Key |
+| `PPIO_BASE_URL` | PPIO API 地址（默认 `https://api.ppio.com/openai`） |
+| `PPIO_MODEL` | 使用的模型（如 `minimax/minimax-m2.7`） |
 
-TDesign 遵循 [MIT 协议](https://github.com/Tencent/tdesign-miniprogram/LICENSE)。
+---
+
+## API 概览
+
+| 分组 | 前缀 | 说明 |
+|------|------|------|
+| 商品 | `/api/products` | 列表、详情、搜索 |
+| 购物车 | `/api/cart` | 增删查改 |
+| 订单 | `/api/orders` | 下单、支付、查询、售后 |
+| 用户 | `/api/user` | 登录、地址、优惠券 |
+| 管理员 | `/api/admin` | 登录、商品/订单/用户/售后管理 |
+| AI 助手 | `/api/agent` | SSE 对话、会话管理 |
+
+API 响应统一格式：`{ code, msg, data }`
+
+---
+
+## 测试
+
+```bash
+# 前端单元测试
+cd Wechat_Online_Shopping
+node --test tests/*.test.cjs
+
+# 后端单元测试
+cd backend
+node --test tests/*.test.js
+```
+
+当前测试状态：前端 83/83 ✅ · 后端 35/35 ✅
+
+---
+
+## AI 购物助手
+
+- 入口：首页右下角悬浮按钮
+- 支持自然语言描述需求，助手自动调用商品搜索接口并以卡片形式展示推荐结果
+- 技术：SSE 流式输出 + Function Calling，对话历史持久化至数据库
+- 限制：每用户 10 条/分钟、单条消息 500 字、最多 50 个会话
+
+---
+
+## 开源协议
+
+MIT
