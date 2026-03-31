@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "Banner管理",
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-image": "tdesign-miniprogram/image/image",
+    "t-popup": "tdesign-miniprogram/popup/popup"
+  }
+}

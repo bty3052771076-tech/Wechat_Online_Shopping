@@ -75,13 +75,21 @@ export function dispatchCommitPay(params) {
 }
 
 /** 开发票 */
-export function dispatchSupplementInvoice() {
+export function dispatchSupplementInvoice(params) {
   if (config.useMock) {
     const { delay } = require('../_utils/delay');
     return delay();
   }
 
-  return new Promise((resolve) => {
-    resolve('real api');
+  const { buildAuthHeader } = require('../_utils/auth');
+  const orderNo = params && params.parameter && params.parameter.orderNo;
+  return requestJson({
+    url: `${config.apiBaseURL}/orders/${orderNo}/invoice`,
+    method: 'PUT',
+    data: params,
+    header: {
+      ...buildAuthHeader(),
+      'Content-Type': 'application/json',
+    },
   });
 }

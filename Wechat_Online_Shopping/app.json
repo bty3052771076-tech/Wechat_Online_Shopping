@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/home/home", "pages/category/index", "pages/cart/index", "pages/usercenter/index"],
+  "pages": ["pages/home/home", "pages/category/index", "pages/cart/index", "pages/usercenter/index", "pages/usercenter/favorites/index"],
   "subpackages": [
     {
       "root": "pages/user",
@@ -65,7 +65,10 @@
         "after-sale-manage/detail/index",
         "user-manage/list/index",
         "user-manage/detail/index",
-        "delivery-manage/index"
+        "delivery-manage/index",
+        "coupon-manage/index",
+        "promotion-manage/index",
+        "banner-manage/index"
       ]
     }
   ],

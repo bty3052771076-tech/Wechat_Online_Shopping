@@ -7,6 +7,8 @@ const adminUserController = require('../controllers/admin-user.controller');
 const adminDeliveryController = require('../controllers/admin-delivery.controller');
 const adminAfterSaleController = require('../controllers/admin-after-sale.controller');
 const adminCouponController = require('../controllers/admin-coupon.controller');
+const adminPromotionController = require('../controllers/admin-promotion.controller');
+const adminBannerController = require('../controllers/admin-banner.controller');
 const { requireAdminAuth } = require('../middlewares/admin-auth');
 
 router.post('/login', adminController.login);
@@ -40,5 +42,15 @@ router.get('/coupons', requireAdminAuth, adminCouponController.getList);
 router.post('/coupons', requireAdminAuth, adminCouponController.create);
 router.put('/coupons/:id', requireAdminAuth, adminCouponController.update);
 router.delete('/coupons/:id', requireAdminAuth, adminCouponController.remove);
+
+router.get('/promotions', requireAdminAuth, adminPromotionController.getList);
+router.post('/promotions', requireAdminAuth, adminPromotionController.create);
+router.put('/promotions/:id', requireAdminAuth, adminPromotionController.update);
+router.delete('/promotions/:id', requireAdminAuth, adminPromotionController.remove);
+
+router.get('/banners', requireAdminAuth, adminBannerController.getList);
+router.post('/banners', requireAdminAuth, adminBannerController.create);
+router.put('/banners/:id', requireAdminAuth, adminBannerController.update);
+router.delete('/banners/:id', requireAdminAuth, adminBannerController.remove);
 
 module.exports = router;

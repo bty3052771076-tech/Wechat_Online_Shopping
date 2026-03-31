@@ -2,6 +2,7 @@ const express = require('express');
 
 const orderController = require('../controllers/order.controller');
 const afterSaleController = require('../controllers/after-sale.controller');
+const invoiceController = require('../controllers/invoice.controller');
 const { authenticate } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.put('/after-sales/:rightsNo/cancel', authenticate, afterSaleController.ca
 router.put('/after-sales/:rightsNo/logistics', authenticate, afterSaleController.updateLogistics);
 
 router.put('/:orderNo/confirm-received', authenticate, afterSaleController.confirmReceived);
+router.put('/:orderNo/invoice', authenticate, invoiceController.upsert);
 router.get('/detail/:id', authenticate, orderController.getOrderDetail);
 
 module.exports = router;

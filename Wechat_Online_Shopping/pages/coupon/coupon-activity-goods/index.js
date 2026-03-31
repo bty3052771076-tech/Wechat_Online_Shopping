@@ -24,7 +24,7 @@ Page({
   getCouponDetail(id) {
     fetchCouponDetail(id).then(({ detail }) => {
       this.setData({ detail });
-      if (detail.type === 2) {
+      if (detail.type === 'discount') {
         if (detail.base > 0) {
           this.setData({
             couponTypeDesc: `满${detail.base / 100}元${detail.value}折`,
@@ -32,7 +32,7 @@ Page({
         } else {
           this.setData({ couponTypeDesc: `${detail.value}折` });
         }
-      } else if (detail.type === 1) {
+      } else if (detail.type === 'price') {
         if (detail.base > 0) {
           this.setData({
             couponTypeDesc: `满${detail.base / 100}元减${detail.value / 100}元`,

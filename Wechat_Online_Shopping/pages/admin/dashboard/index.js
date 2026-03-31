@@ -32,6 +32,24 @@ Page({
         icon: 'deliver',
         url: '/pages/admin/delivery-manage/index',
       },
+      {
+        title: '优惠券管理',
+        desc: '创建、编辑、下架优惠券',
+        icon: 'discount',
+        url: '/pages/admin/coupon-manage/index',
+      },
+      {
+        title: '促销管理',
+        desc: '创建、编辑促销活动',
+        icon: 'discount-fill',
+        url: '/pages/admin/promotion-manage/index',
+      },
+      {
+        title: 'Banner管理',
+        desc: '管理首页轮播图',
+        icon: 'image',
+        url: '/pages/admin/banner-manage/index',
+      },
     ],
   },
 

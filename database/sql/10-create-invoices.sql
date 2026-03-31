@@ -1,0 +1,17 @@
+-- 发票信息表
+CREATE TABLE IF NOT EXISTS `invoices` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_no` VARCHAR(64) NOT NULL COMMENT '订单号',
+  `user_id` BIGINT NOT NULL,
+  `invoice_type` TINYINT NOT NULL DEFAULT 0 COMMENT '0=不开/5=电子发票',
+  `title_type` TINYINT NOT NULL DEFAULT 1 COMMENT '1=个人/2=公司',
+  `content_type` TINYINT NOT NULL DEFAULT 1 COMMENT '1=商品明细/2=商品类别',
+  `buyer_name` VARCHAR(100) DEFAULT NULL COMMENT '抬头名称',
+  `buyer_tax_no` VARCHAR(50) DEFAULT NULL COMMENT '纳税人识别号',
+  `buyer_phone` VARCHAR(20) DEFAULT NULL,
+  `email` VARCHAR(100) DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_order_no` (`order_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发票信息';

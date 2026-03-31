@@ -1,5 +1,85 @@
 [
   {
+    "rightsNo": "AS177492458814381JA",
+    "orderNo": "ORDER17749245241315AJUOF",
+    "userId": 1,
+    "userName": "测试用户",
+    "storeId": "default-store",
+    "storeName": "默认店铺",
+    "rightsType": 10,
+    "rightsReasonType": 1,
+    "rightsReasonDesc": "API测试",
+    "refundAmount": 2990,
+    "refundRequestAmount": 2990,
+    "rightsStatus": 20,
+    "createTime": "2026-03-31 10:36:28",
+    "refundMemo": "测试退货退款",
+    "rightsImageUrls": [],
+    "goodsItems": [
+      {
+        "skuId": 1,
+        "spuId": 1,
+        "goodsName": "新疆阿克苏苹果",
+        "goodsPictureUrl": "/assets/images/products/apple.png",
+        "specInfo": [
+          {
+            "specTitle": "size",
+            "specValues": "小果"
+          },
+          {
+            "specTitle": "weight",
+            "specValues": "2.5kg"
+          }
+        ],
+        "itemRefundAmount": 2990,
+        "rightsQuantity": 1
+      }
+    ],
+    "logisticsVO": {
+      "logisticsType": 1,
+      "logisticsNo": "",
+      "logisticsStatus": null,
+      "logisticsCompanyCode": "",
+      "logisticsCompanyName": "",
+      "receiverName": "Regression User 1774924524108",
+      "receiverPhone": "13800138000",
+      "receiverProvince": "",
+      "receiverCity": "",
+      "receiverCountry": "",
+      "receiverArea": "",
+      "receiverAddress": "BeijingBeijingChaoyangRegression Street 1774924524108",
+      "remark": "",
+      "nodes": []
+    },
+    "rightsRefund": {
+      "traceNo": "TRACEAS177492458814381JA",
+      "refundDesc": "测试退货退款",
+      "refundAmount": 2990
+    },
+    "id": "AS177492458814381JA",
+    "typeName": "退货退款",
+    "afterSaleRequireType": "REFUND_GOODS_MONEY",
+    "goodsName": "新疆阿克苏苹果",
+    "goodsImage": "/assets/images/products/apple.png",
+    "buttonVOs": [
+      {
+        "name": "填写运单号",
+        "primary": false,
+        "type": 3
+      }
+    ],
+    "refundMethodList": [
+      {
+        "refundMethodName": "微信支付",
+        "refundMethodAmount": 2990
+      }
+    ],
+    "rightsStatusName": "已审核",
+    "userRightsStatus": 120,
+    "userRightsStatusName": "等待买家寄回商品",
+    "userRightsStatusDesc": "商家已审核通过，请尽快填写退货物流信息"
+  },
+  {
     "rightsNo": "AS1773055606388EHSP",
     "orderNo": "ORDER1773054735187QFAADW",
     "userId": 1,

@@ -30,6 +30,7 @@ const ProductStockLog = require('./ProductStockLog');
 const ProductBrowseHistory = require('./ProductBrowseHistory');
 const Favorite = require('./Favorite');
 const Promotion = require('./Promotion');
+const Invoice = require('./Invoice');
 
 // 建立模型关联关系
 
@@ -119,6 +120,7 @@ module.exports = {
   Admin,
   AfterSale,
   Banner,
+  Invoice,
   Coupon,
   UserCoupon,
   SystemConfig,

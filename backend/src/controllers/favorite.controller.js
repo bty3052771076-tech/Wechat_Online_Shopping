@@ -4,11 +4,14 @@ const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
 
 function toFavoriteResponse(row) {
   const spu = row.spu || {};
+  // min_sale_price 以元存储，转为分供前端使用
+  const minSalePriceFen = Math.round(parseFloat(spu.min_sale_price || 0) * 100);
   return {
     id: String(row.id),
     spuId: String(row.spu_id),
     title: spu.title || '',
     primaryImage: normalizeImageUrl(spu.primary_image || '', IMAGE_SCENES.product),
+    minSalePrice: minSalePriceFen,
     createdAt: row.created_at,
   };
 }
@@ -28,7 +31,7 @@ class FavoriteController {
           {
             model: ProductSpus,
             as: 'spu',
-            attributes: ['id', 'title', 'primary_image'],
+            attributes: ['id', 'title', 'primary_image', 'min_sale_price'],
           },
         ],
         order: [['created_at', 'DESC']],

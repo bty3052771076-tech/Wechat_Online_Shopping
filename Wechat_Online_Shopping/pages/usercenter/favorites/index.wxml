@@ -1,0 +1,38 @@
+<view class="favorites-page">
+  <view wx:if="{{list.length === 0 && !loading}}" class="empty-wrap">
+    <t-icon name="heart" size="80rpx" color="#ccc" />
+    <view class="empty-text">暂无收藏商品</view>
+  </view>
+
+  <view class="goods-list">
+    <view
+      wx:for="{{list}}"
+      wx:key="spuId"
+      class="goods-item"
+      data-spu-id="{{item.spuId}}"
+      bind:tap="onGoods"
+    >
+      <t-image src="{{item.primaryImage}}" t-class="goods-img" mode="aspectFill" />
+      <view class="goods-info">
+        <view class="goods-title">{{item.title}}</view>
+        <view class="goods-price-row">
+          <price price="{{item.minSalePrice}}" wr-class="goods-price" />
+        </view>
+      </view>
+      <t-button
+        size="small"
+        variant="text"
+        t-class="remove-btn"
+        data-spu-id="{{item.spuId}}"
+        data-index="{{index}}"
+        bind:tap="onRemoveFavorite"
+        catch:tap="onRemoveFavorite"
+      >
+        <t-icon name="heart-filled" size="40rpx" color="#FF5F15" />
+      </t-button>
+    </view>
+  </view>
+
+  <view wx:if="{{!hasMore && list.length > 0}}" class="no-more">没有更多了</view>
+</view>
+<t-toast id="t-toast" />

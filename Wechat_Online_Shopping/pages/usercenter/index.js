@@ -16,6 +16,12 @@ const menuData = [
       type: 'coupon',
     },
     {
+      title: '我的收藏',
+      tit: '',
+      url: '',
+      type: 'favorite',
+    },
+    {
       title: '积分',
       tit: '',
       url: '',
@@ -195,6 +201,10 @@ Page({
       }
       case 'coupon': {
         wx.navigateTo({ url: '/pages/coupon/coupon-list/index' });
+        break;
+      }
+      case 'favorite': {
+        wx.navigateTo({ url: '/pages/usercenter/favorites/index' });
         break;
       }
       default: {

@@ -38,6 +38,13 @@
       <view class="goods-title">
         <view class="goods-name">{{details.title}}</view>
         <view class="goods-tag">
+          <!-- 收藏按钮 -->
+          <t-button t-class="shareBtn" variant="text" bind:tap="onFavoriteTap">
+            <view class="btn-icon">
+              <t-icon name="{{isFavorite ? 'heart-filled' : 'heart'}}" size="40rpx" color="{{isFavorite ? '#FF5F15' : '#000'}}" />
+              <view class="share-text">{{isFavorite ? '已收藏' : '收藏'}}</view>
+            </view>
+          </t-button>
           <t-button open-type="share" t-class="shareBtn" variant="text">
             <view class="btn-icon">
               <t-icon name="share" size="40rpx" color="#000" />

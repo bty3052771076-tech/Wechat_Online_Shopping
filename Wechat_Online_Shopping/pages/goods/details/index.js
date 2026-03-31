@@ -7,6 +7,7 @@ import {
   getGoodsDetailsCommentsCount,
 } from '../../../services/good/fetchGoodsDetailsComments';
 import { cdnBase } from '../../../config/index';
+import { checkFavorite, addFavorite, removeFavorite } from '../../../services/favorite/index';
 
 const { buildGoodsDetailCartPayload } = require('../../../services/_utils/order-action-helpers');
 const { DEFAULT_COMMENT_AVATAR } = require('../../../services/_utils/comment-adapters');
@@ -84,6 +85,7 @@ Page({
     anonymityAvatar: DEFAULT_COMMENT_AVATAR,
     productionDate: '',
     shelfLife: null,
+    isFavorite: false,
   },
 
   handlePopupHide() {
@@ -404,5 +406,33 @@ Page({
     this.getDetail(spuId);
     this.getCommentsList(spuId);
     this.getCommentsStatistics(spuId);
+    // 初始化收藏状态（未登录时静默忽略）
+    checkFavorite(spuId).then((isFavorite) => {
+      this.setData({ isFavorite: !!isFavorite });
+    }).catch(() => {});
+  },
+
+  onFavoriteTap() {
+    const { spuId, isFavorite } = this.data;
+    const action = isFavorite ? removeFavorite(spuId) : addFavorite(spuId);
+    action.then(() => {
+      const next = !isFavorite;
+      this.setData({ isFavorite: next });
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: next ? '已加入收藏' : '已取消收藏',
+        icon: '',
+        duration: 1500,
+      });
+    }).catch(() => {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '操作失败，请先登录',
+        icon: '',
+        duration: 1500,
+      });
+    });
   },
 });

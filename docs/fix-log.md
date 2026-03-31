@@ -360,4 +360,120 @@ DELETE /api/favorites/1: 取消收藏成功  ✅
 
 ---
 
-> 待后续修复项追加...
+---
+
+## [2026-03-31] 第二轮审计 #14-#20 全部修复
+
+**修复状态**: ✅ 全链路验证通过
+
+---
+
+### #14 优惠券页面 type 字段格式错误 (P1)
+
+**根因**: 优惠券详情/活动商品页面沿用 mock 数据的数字型 `type`（1=满减/2=折扣），而真实 API 返回字符串（`'price'`/`'discount'`），导致类型描述永远不渲染。
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `Wechat_Online_Shopping/pages/coupon/coupon-activity-goods/index.js` | `detail.type === 2` → `=== 'discount'`，`=== 1` → `=== 'price'` |
+| `Wechat_Online_Shopping/pages/coupon/coupon-detail/index.js` | 同上，并补全 `detail.desc` 字段 |
+
+---
+
+### #15 商品详情页无收藏按钮 (P1)
+
+**根因**: 后端 `/api/favorites` 和前端 `services/favorite/index.js` 均已就绪，但 `pages/goods/details/` 未集成。
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `Wechat_Online_Shopping/pages/goods/details/index.js` | 导入 `checkFavorite/addFavorite/removeFavorite`；`onLoad` 初始化收藏状态；新增 `onFavoriteTap` 方法 |
+| `Wechat_Online_Shopping/pages/goods/details/index.wxml` | 在商品标题区添加心形收藏按钮（选中态切换颜色） |
+
+---
+
+### #16 用户中心无收藏列表页 (P2)
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `Wechat_Online_Shopping/pages/usercenter/favorites/index.{js,wxml,json,wxss}` | 新建收藏列表页（分页加载、上拉加载更多、取消收藏、跳转商品详情） |
+| `Wechat_Online_Shopping/pages/usercenter/index.js` | menuData 追加"我的收藏"入口；switch-case 追加 `favorite` 跳转 |
+| `Wechat_Online_Shopping/app.json` | 主 pages 数组注册 `pages/usercenter/favorites/index` |
+| `backend/src/controllers/favorite.controller.js` | `toFavoriteResponse` 追加 `minSalePrice`（元→分）；include 追加 `min_sale_price` |
+
+---
+
+### #17 Admin 无优惠券管理页 (P2)
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `Wechat_Online_Shopping/services/admin/coupon.js` | 新建管理端优惠券服务（CRUD） |
+| `Wechat_Online_Shopping/pages/admin/coupon-manage/index.{js,wxml,json,wxss}` | 新建优惠券管理页（列表+新建/编辑弹层） |
+| `Wechat_Online_Shopping/pages/admin/dashboard/index.js` | menuList 追加优惠券/促销/Banner 三项入口 |
+| `Wechat_Online_Shopping/app.json` | admin subpackage 注册三个新管理页 |
+
+---
+
+### #18 Admin 无促销活动管理 (P2)
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `backend/src/controllers/admin-promotion.controller.js` | 新建：getList/create/update/remove（软删除 status=0） |
+| `backend/src/routes/admin.js` | 注册 `/api/admin/promotions` CRUD + `/api/admin/banners` CRUD |
+| `Wechat_Online_Shopping/services/admin/promotion.js` | 新建管理端促销服务 |
+| `Wechat_Online_Shopping/pages/admin/promotion-manage/index.{js,wxml,json,wxss}` | 新建促销管理页 |
+
+---
+
+### #19 Admin 无 Banner 管理 (P2)
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `backend/src/controllers/admin-banner.controller.js` | 新建：getList/create/update/remove |
+| `Wechat_Online_Shopping/services/admin/banner.js` | 新建管理端 Banner 服务 |
+| `Wechat_Online_Shopping/pages/admin/banner-manage/index.{js,wxml,json,wxss}` | 新建 Banner 管理页（含图片预览） |
+
+---
+
+### #20 发票功能 stub (P2)
+
+**根因**: `services/order/orderConfirm.js` 的 `dispatchSupplementInvoice` 返回 `resolve('real api')`，数据从未写入；后端无发票 API；数据库无 `invoices` 表。
+
+**修改文件**:
+
+| 文件 | 修改内容 |
+|------|---------|
+| `database/sql/10-create-invoices.sql` | 新建 `invoices` 表（已执行） |
+| `backend/src/models/Invoice.js` | 新建 Invoice Sequelize 模型 |
+| `backend/src/models/index.js` | 注册 Invoice 模型 |
+| `backend/src/controllers/invoice.controller.js` | 新建 `upsert()` — 按 orderNo 创建或更新发票信息 |
+| `backend/src/routes/order.js` | 新增 `PUT /:orderNo/invoice` 路由 |
+| `Wechat_Online_Shopping/services/order/orderConfirm.js` | `dispatchSupplementInvoice` 改为真实 API 调用 |
+
+---
+
+### 第二轮测试结果
+
+**API 测试（Node.js HTTP）**:
+```
+GET /admin/promotions: 200 Success count: 2  ✅
+POST /admin/promotions: 201 Success  ✅
+GET /admin/banners: 200 Success count: 3  ✅
+POST /admin/banners: 201 Success  ✅
+PUT /admin/banners/:id: 200 Success  ✅
+DELETE /admin/banners/:id: 200 Success  ✅
+```
+
+**单元测试**:
+- 前端: 83/83 通过 ✅
+- 后端: 34/35（第33项既有失败）

@@ -1,0 +1,63 @@
+<view class="page">
+  <view class="toolbar">
+    <t-button size="small" theme="primary" bind:tap="onAdd">+ 新建促销</t-button>
+  </view>
+
+  <view wx:if="{{list.length === 0}}" class="empty">暂无促销活动</view>
+
+  <view class="list">
+    <view wx:for="{{list}}" wx:key="id" class="card {{item.status === 0 ? 'card-off' : ''}}">
+      <view class="card-header">
+        <view class="card-title">{{item.title}}</view>
+        <view class="card-badge">{{item.typeLabel}}</view>
+      </view>
+      <view class="card-body">
+        <view class="meta-row" wx:if="{{item.description}}"><text class="meta-label">描述:</text><text class="meta-value">{{item.description}}</text></view>
+        <view class="meta-row" wx:if="{{item.ladderDesc}}"><text class="meta-label">规则:</text><text class="meta-value">{{item.ladderDesc}}</text></view>
+        <view class="meta-row"><text class="meta-label">有效期:</text><text class="meta-value">{{item.startTime ? item.startTime : '—'}} ~ {{item.endTime ? item.endTime : '—'}}</text></view>
+        <view class="meta-row"><text class="meta-label">状态:</text><text class="meta-value {{item.status === 1 ? 'on' : 'off'}}">{{item.statusLabel}}</text></view>
+      </view>
+      <view class="card-footer">
+        <t-button size="small" variant="outline" data-id="{{item.id}}" bind:tap="onEdit">编辑</t-button>
+        <t-button size="small" theme="danger" variant="outline" data-id="{{item.id}}" bind:tap="onDelete">禁用</t-button>
+      </view>
+    </view>
+  </view>
+
+  <t-popup visible="{{showDialog}}" placement="bottom" bind:visible-change="onCancel">
+    <view class="dialog">
+      <view class="dialog-title">{{isAdd ? '新建促销活动' : '编辑促销活动'}}</view>
+      <view class="form-row">
+        <text class="form-label">名称*</text>
+        <t-input value="{{formData.title}}" data-field="title" bind:change="onFormInput" placeholder="活动名称" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">类型*</text>
+        <t-radio-group value="{{formData.promotionSubCode}}" data-field="promotionSubCode" bind:change="onFormInput">
+          <t-radio value="MYJ">满减</t-radio>
+          <t-radio value="MYG">满折</t-radio>
+        </t-radio-group>
+      </view>
+      <view class="form-row">
+        <text class="form-label">描述</text>
+        <t-input value="{{formData.description}}" data-field="description" bind:change="onFormInput" placeholder="活动描述" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">阶梯规则</text>
+        <t-input value="{{formData.ladderDesc}}" data-field="ladderDesc" bind:change="onFormInput" placeholder="如: 满100减20/满200减50" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">开始日期*</text>
+        <t-input value="{{formData.startTime}}" data-field="startTime" bind:change="onFormInput" placeholder="YYYY-MM-DD" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">结束日期*</text>
+        <t-input value="{{formData.endTime}}" data-field="endTime" bind:change="onFormInput" placeholder="YYYY-MM-DD" />
+      </view>
+      <view class="dialog-footer">
+        <t-button variant="outline" bind:tap="onCancel">取消</t-button>
+        <t-button theme="primary" bind:tap="onSave">保存</t-button>
+      </view>
+    </view>
+  </t-popup>
+</view>
