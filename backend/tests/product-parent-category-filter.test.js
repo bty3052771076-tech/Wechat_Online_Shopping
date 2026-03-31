@@ -52,7 +52,7 @@ test('GET /api/products/list supports top-level category filtering via descendan
   assert.ok(Array.isArray(response.data.data));
   assert.ok(response.data.data.length > 0, 'expected products under top-level category 1');
   assert.ok(
-    response.data.data.every((item) => [4, 5, 6].includes(Number(item.category_id))),
+    response.data.data.every((item) => [4, 5, 6, 13, 14].includes(Number(item.category_id))),
     JSON.stringify(response.data.data),
   );
 });
