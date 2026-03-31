@@ -19,12 +19,20 @@ function mockFetchHome() {
 }
 
 function realFetchHome() {
-  return requestJson({
+  // 并发请求分类树和轮播图，轮播图失败时静默降级
+  const categoriesReq = requestJson({
     url: `${config.apiBaseURL}/products/categories/tree`,
     method: 'GET',
-  }).then((response) => {
-    const categories = adaptCategoryTreeResponse(response);
-    const swiper = buildHomeSwiper();
+  });
+  const bannersReq = requestJson({
+    url: `${config.apiBaseURL}/banners`,
+    method: 'GET',
+  }).catch(() => ({ data: [] }));
+
+  return Promise.all([categoriesReq, bannersReq]).then(([catResp, bannerResp]) => {
+    const categories = adaptCategoryTreeResponse(catResp);
+    const banners = Array.isArray(bannerResp && bannerResp.data) ? bannerResp.data : [];
+    const swiper = buildHomeSwiper(banners);
 
     return {
       swiper,

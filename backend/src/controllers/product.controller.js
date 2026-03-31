@@ -3,6 +3,9 @@ const { Op } = require('sequelize');
 const ProductSpus = require('../models/ProductSpus');
 const ProductSkus = require('../models/ProductSkus');
 const Category = require('../models/Category');
+const ProductComment = require('../models/ProductComment');
+const Order = require('../models/Order');
+const User = require('../models/User');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const {
   IMAGE_SCENES,
@@ -288,7 +291,23 @@ class ProductController {
         return errorResponse(res, 404, 'ProductNotFound', '商品不存在');
       }
 
-      return successResponse(res, 200, '获取成功', buildSummary(buildCommentTemplates(spu.toJSON())));
+      // 优先从数据库读取真实评论汇总
+      const dbTotal = await ProductComment.count({ where: { spu_id: id, status: 1 } });
+      if (dbTotal > 0) {
+        const goodCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: { [Op.gte]: 4 } } });
+        const middleCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: 3 } });
+        const badCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: { [Op.lte]: 2 } } });
+        const hasImageCount = await ProductComment.count({
+          where: { spu_id: id, status: 1, comment_resources: { [Op.not]: null } },
+        });
+        const goodRate = Math.round((goodCount / dbTotal) * 1000) / 10;
+        return successResponse(res, 200, '获取成功', {
+          commentCount: dbTotal, goodCount, middleCount, badCount, hasImageCount, goodRate, uidCount: 0,
+        });
+      }
+
+      // 无真实评论时返回空汇总
+      return successResponse(res, 200, '获取成功', buildSummary([]));
     } catch (error) {
       next(error);
     }
@@ -306,21 +325,121 @@ class ProductController {
         return errorResponse(res, 404, 'ProductNotFound', '商品不存在');
       }
 
-      const allComments = buildCommentTemplates(spu.toJSON());
-      const comments = filterComments(allComments, {
-        commentLevel,
-        hasImage,
-      });
-      const paged = paginateComments(comments, page, pageSize);
+      // 优先从数据库读取真实评论
+      const dbWhere = { spu_id: id, status: 1 };
+      if (String(hasImage) === 'true' || String(hasImage) === '1') {
+        dbWhere.comment_resources = { [Op.not]: null };
+      }
+      if (commentLevel !== undefined && commentLevel !== '') {
+        switch (Number(commentLevel)) {
+          case 3: dbWhere.comment_score = { [Op.gte]: 4 }; break;
+          case 2: dbWhere.comment_score = 3; break;
+          case 1: dbWhere.comment_score = { [Op.lte]: 2 }; break;
+          default: break;
+        }
+      }
 
+      const dbTotal = await ProductComment.count({ where: dbWhere });
+      if (dbTotal > 0) {
+        const offset = (Number(page) - 1) * Number(pageSize);
+        const dbComments = await ProductComment.findAll({
+          where: dbWhere,
+          order: [['created_at', 'DESC']],
+          limit: Number(pageSize),
+          offset,
+        });
+
+        const list = await Promise.all(dbComments.map(async (c) => {
+          let userName = '用户';
+          let userHeadUrl = '';
+          if (!c.is_anonymous) {
+            const user = await User.findByPk(c.user_id, { attributes: ['nickname', 'username', 'avatar_url'] });
+            if (user) {
+              userName = user.nickname || user.username || '用户';
+              userHeadUrl = user.avatar_url || '';
+            }
+          } else {
+            userName = '匿名用户';
+          }
+          return {
+            id: String(c.id),
+            spuId: c.spu_id,
+            commentContent: c.comment_content || '',
+            commentScore: c.comment_score,
+            userName,
+            userHeadUrl,
+            isAnonymity: !!c.is_anonymous,
+            commentTime: String(new Date(c.created_at).getTime()),
+            commentResources: normalizeCommentResources(c.comment_resources || []),
+            goodsDetailInfo: c.sku_spec_info || '',
+            isAutoComment: !!c.is_auto_comment,
+            sellerReply: c.seller_reply || '',
+          };
+        }));
+
+        // 全量汇总（不受筛选条件影响）
+        const allTotal = await ProductComment.count({ where: { spu_id: id, status: 1 } });
+        const goodCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: { [Op.gte]: 4 } } });
+        const middleCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: 3 } });
+        const badCount = await ProductComment.count({ where: { spu_id: id, status: 1, comment_score: { [Op.lte]: 2 } } });
+        const goodRate = allTotal === 0 ? 0 : Math.round((goodCount / allTotal) * 1000) / 10;
+
+        return successResponse(res, 200, '获取成功', {
+          list,
+          pagination: { page: Number(page), pageSize: Number(pageSize), total: dbTotal },
+          summary: { commentCount: allTotal, goodCount, middleCount, badCount, hasImageCount: 0, goodRate, uidCount: 0 },
+        });
+      }
+
+      // 无真实评论，返回空列表（不再使用 mock 数据）
       return successResponse(res, 200, '获取成功', {
-        list: paged.list.map((item) => ({
-          ...item,
-          commentResources: normalizeCommentResources(item.commentResources),
-        })),
-        pagination: paged.pagination,
-        summary: buildSummary(allComments),
+        list: [],
+        pagination: { page: Number(page), pageSize: Number(pageSize), total: 0 },
+        summary: buildSummary([]),
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async submitComment(req, res, next) {
+    try {
+      const { id: spuId } = req.params;
+      const userId = req.user.user_id;
+      const { orderNo, commentScore, commentContent, isAnonymous, skuSpecInfo } = req.body;
+
+      // 验证商品存在
+      const spu = await ProductSpus.findByPk(spuId, { attributes: ['id', 'status'] });
+      if (!spu) return errorResponse(res, 404, 'ProductNotFound', '商品不存在');
+
+      // 通过 orderNo 查找关联订单
+      let orderId = null;
+      if (orderNo) {
+        const order = await Order.findOne({ where: { order_no: orderNo, user_id: userId }, attributes: ['id'] });
+        if (order) { orderId = order.id; }
+      }
+
+      await ProductComment.create({
+        spu_id: spuId,
+        order_id: orderId,
+        order_no: orderNo || null,
+        user_id: userId,
+        sku_spec_info: skuSpecInfo || null,
+        comment_score: Number(commentScore) || 5,
+        comment_content: commentContent || '',
+        is_anonymous: isAnonymous ? 1 : 0,
+        status: 1,
+      });
+
+      // 评价成功后，将关联订单从 4(待评价) 更新为 5(已完成)
+      if (orderId) {
+        await Order.update(
+          { order_status: 5 },
+          { where: { id: orderId, order_status: 4 } },
+        );
+      }
+
+      return successResponse(res, 201, '评价提交成功');
     } catch (error) {
       next(error);
     }

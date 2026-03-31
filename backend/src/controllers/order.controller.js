@@ -1,4 +1,4 @@
-const { Order, OrderItem, UserAddress, ProductSkus, ProductSpus, ShoppingCart, sequelize } = require('../models');
+const { Order, OrderItem, UserAddress, ProductSkus, ProductSpus, ShoppingCart, DeliveryArea, UserCoupon, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
 const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
 
@@ -19,7 +19,7 @@ class OrderController {
     const transaction = await sequelize.transaction();
 
     try {
-      const { items, addressId, deliveryFee = 0, remark } = req.body;
+      const { items, addressId, deliveryFee = 0, remark, userCouponId } = req.body;
       const userId = req.user.user_id;
 
       if (!Array.isArray(items) || items.length === 0) {
@@ -32,7 +32,7 @@ class OrderController {
         return errorResponse(res, 400, 'InvalidParam', '收货地址ID不能为空');
       }
 
-      if (deliveryFee < 0) {
+      if (Number(deliveryFee) < 0) {
         await transaction.rollback();
         return errorResponse(res, 400, 'InvalidParam', '配送费不能为负数');
       }
@@ -94,10 +94,53 @@ class OrderController {
         });
       }
 
+      // 服务端根据配送区域规则计算配送费（忽略客户端传值，防止篡改）
+      const totalFen = Math.round(totalAmount * 100);
+      const zones = await DeliveryArea.findAll({ where: { is_available: 1 }, attributes: ['base_fee_fen', 'free_threshold_fen'] });
+      let serverDeliveryFee = 0;
+      if (zones.length > 0) {
+        const qualifiesFree = zones.some(z => z.free_threshold_fen > 0 && totalFen >= z.free_threshold_fen);
+        if (!qualifiesFree) {
+          const minFen = Math.min(...zones.map(z => z.base_fee_fen).filter(f => f > 0));
+          serverDeliveryFee = Number.isFinite(minFen) ? minFen / 100 : 0;
+        }
+      }
+
+      // 服务端验证并计算优惠券折扣
+      let discountAmount = 0;
+      let usedUserCoupon = null;
+      if (userCouponId) {
+        const userCoupon = await UserCoupon.findOne({
+          where: { id: userCouponId, user_id: userId, status: 1 },
+          transaction,
+        });
+        if (!userCoupon) {
+          await transaction.rollback();
+          return errorResponse(res, 400, 'CouponInvalid', '优惠券不可用或已使用');
+        }
+        if (new Date(userCoupon.end_time) < new Date()) {
+          await transaction.rollback();
+          return errorResponse(res, 400, 'CouponExpired', '优惠券已过期');
+        }
+        if (totalAmount < parseFloat(userCoupon.min_amount)) {
+          await transaction.rollback();
+          return errorResponse(res, 400, 'CouponMinAmountNotMet', `订单金额未满${userCoupon.min_amount}元，无法使用该优惠券`);
+        }
+        // coupon_type: 1=满减, 2=折扣
+        if (userCoupon.coupon_type === 1) {
+          discountAmount = parseFloat(userCoupon.discount_value);
+        } else {
+          // discount_value 为折扣率 (如 0.8 = 8折)
+          discountAmount = parseFloat((totalAmount * (1 - parseFloat(userCoupon.discount_value))).toFixed(2));
+        }
+        discountAmount = Math.min(discountAmount, totalAmount);
+        usedUserCoupon = userCoupon;
+      }
+
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).slice(2, 8).toUpperCase();
       const orderNo = `ORDER${timestamp}${randomStr}`;
-      const payAmount = totalAmount + parseFloat(deliveryFee);
+      const payAmount = totalAmount + serverDeliveryFee - discountAmount;
       const fullAddress = `${address.province_name}${address.city_name}${address.district_name}${address.detail_address}`;
 
       const order = await Order.create(
@@ -105,8 +148,8 @@ class OrderController {
           order_no: orderNo,
           user_id: userId,
           total_amount: totalAmount,
-          discount_amount: 0,
-          delivery_fee: deliveryFee,
+          discount_amount: discountAmount,
+          delivery_fee: serverDeliveryFee,
           pay_amount: payAmount,
           receiver_name: address.receiver_name,
           receiver_phone: address.receiver_phone,
@@ -132,6 +175,14 @@ class OrderController {
           where: { id: item.skuId },
           transaction,
         });
+      }
+
+      // 标记优惠券已使用
+      if (usedUserCoupon) {
+        await usedUserCoupon.update(
+          { status: 2, use_time: new Date(), order_id: order.id },
+          { transaction },
+        );
       }
 
       await ShoppingCart.destroy({

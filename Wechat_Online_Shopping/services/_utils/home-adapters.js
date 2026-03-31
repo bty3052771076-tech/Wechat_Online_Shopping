@@ -1,4 +1,5 @@
-const HOME_SWIPER_IMAGES = [
+// 兜底静态图（API 失败时使用）
+const HOME_SWIPER_FALLBACK = [
   '/assets/images/banners/spring-sale.png',
   '/assets/images/banners/new-user.png',
   '/assets/images/banners/featured.png',
@@ -8,8 +9,13 @@ function getCategoryName(category = {}) {
   return category.name || category.category_name || '';
 }
 
-function buildHomeSwiper() {
-  return HOME_SWIPER_IMAGES.slice();
+// banners: API 返回的 banner 对象数组（含 image_url 字段）
+// 若为空则降级到本地静态图
+function buildHomeSwiper(banners = []) {
+  if (Array.isArray(banners) && banners.length > 0) {
+    return banners.map((b) => b.image_url || '').filter(Boolean);
+  }
+  return HOME_SWIPER_FALLBACK.slice();
 }
 
 function buildHomeTabs(categories = []) {

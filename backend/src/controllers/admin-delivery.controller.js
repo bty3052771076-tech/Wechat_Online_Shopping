@@ -1,101 +1,93 @@
 const { successResponse, errorResponse } = require('../utils/response');
-const { readJson, writeJson } = require('../services/json-store');
+const DeliveryArea = require('../models/DeliveryArea');
 
-const DELIVERY_FILE = 'admin-delivery-areas.json';
-const DEFAULT_DELIVERY_AREAS = [
-  {
-    id: 'area_001',
-    areaName: '同城配送',
-    description: '市区范围内配送',
-    baseFee: 500,
-    freeThreshold: 9900,
-  },
-  {
-    id: 'area_002',
-    areaName: '省内配送',
-    description: '省内非同城区配送',
-    baseFee: 800,
-    freeThreshold: 19900,
-  },
-  {
-    id: 'area_003',
-    areaName: '全国配送',
-    description: '跨省配送',
-    baseFee: 1200,
-    freeThreshold: 29900,
-  },
-];
-
-function getAreas() {
-  return readJson(DELIVERY_FILE, DEFAULT_DELIVERY_AREAS);
-}
-
-function saveAreas(data) {
-  return writeJson(DELIVERY_FILE, data);
+// 将 DB 行转换为前端格式
+function toResponse(row) {
+  return {
+    id: row.id,
+    areaName: row.area_name,
+    description: row.description || '',
+    baseFee: row.base_fee_fen,
+    freeThreshold: row.free_threshold_fen,
+  };
 }
 
 class AdminDeliveryController {
-  getList(req, res) {
-    return successResponse(res, 200, '获取成功', getAreas());
+  async getList(req, res, next) {
+    try {
+      const rows = await DeliveryArea.findAll({
+        where: { is_available: 1 },
+        order: [['id', 'ASC']],
+      });
+
+      return successResponse(res, 200, '获取成功', rows.map(toResponse));
+    } catch (error) {
+      next(error);
+    }
   }
 
-  create(req, res) {
-    const { areaName, description = '', baseFee = 0, freeThreshold = 0 } = req.body;
+  async create(req, res, next) {
+    try {
+      const { areaName, description = '', baseFee = 0, freeThreshold = 0 } = req.body;
 
-    if (!areaName || !String(areaName).trim()) {
-      return errorResponse(res, 400, 'InvalidParam', '区域名称不能为空');
+      if (!areaName || !String(areaName).trim()) {
+        return errorResponse(res, 400, 'InvalidParam', '区域名称不能为空');
+      }
+
+      const row = await DeliveryArea.create({
+        area_name: String(areaName).trim(),
+        description: String(description || '').trim() || null,
+        base_fee_fen: Number(baseFee || 0),
+        free_threshold_fen: Number(freeThreshold || 0),
+        is_available: 1,
+      });
+
+      return successResponse(res, 201, '添加成功', toResponse(row));
+    } catch (error) {
+      next(error);
     }
-
-    const areas = getAreas();
-    const newArea = {
-      id: `area_${Date.now()}`,
-      areaName: String(areaName).trim(),
-      description: String(description || '').trim(),
-      baseFee: Number(baseFee || 0),
-      freeThreshold: Number(freeThreshold || 0),
-    };
-
-    areas.push(newArea);
-    saveAreas(areas);
-
-    return successResponse(res, 201, '添加成功', newArea);
   }
 
-  update(req, res) {
-    const { id } = req.params;
-    const { areaName, description = '', baseFee = 0, freeThreshold = 0 } = req.body;
-    const areas = getAreas();
-    const index = areas.findIndex((item) => item.id === id);
+  async update(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { areaName, description = '', baseFee = 0, freeThreshold = 0 } = req.body;
 
-    if (index < 0) {
-      return errorResponse(res, 404, 'DeliveryAreaNotFound', '配送区域不存在');
+      const row = await DeliveryArea.findByPk(id);
+
+      if (!row || row.is_available === 0) {
+        return errorResponse(res, 404, 'DeliveryAreaNotFound', '配送区域不存在');
+      }
+
+      await row.update({
+        area_name: String(areaName || row.area_name).trim(),
+        description: String(description).trim() || null,
+        base_fee_fen: Number(baseFee || 0),
+        free_threshold_fen: Number(freeThreshold || 0),
+      });
+
+      return successResponse(res, 200, '更新成功', toResponse(row));
+    } catch (error) {
+      next(error);
     }
-
-    areas[index] = {
-      ...areas[index],
-      areaName: String(areaName || areas[index].areaName).trim(),
-      description: String(description).trim(),
-      baseFee: Number(baseFee || 0),
-      freeThreshold: Number(freeThreshold || 0),
-    };
-    saveAreas(areas);
-
-    return successResponse(res, 200, '更新成功', areas[index]);
   }
 
-  remove(req, res) {
-    const { id } = req.params;
-    const areas = getAreas();
-    const index = areas.findIndex((item) => item.id === id);
+  async remove(req, res, next) {
+    try {
+      const { id } = req.params;
+      const row = await DeliveryArea.findByPk(id);
 
-    if (index < 0) {
-      return errorResponse(res, 404, 'DeliveryAreaNotFound', '配送区域不存在');
+      if (!row || row.is_available === 0) {
+        return errorResponse(res, 404, 'DeliveryAreaNotFound', '配送区域不存在');
+      }
+
+      // 软删除
+      await row.update({ is_available: 0 });
+
+      return successResponse(res, 200, '删除成功', toResponse(row));
+    } catch (error) {
+      next(error);
     }
-
-    const [removed] = areas.splice(index, 1);
-    saveAreas(areas);
-
-    return successResponse(res, 200, '删除成功', removed);
   }
 }
 

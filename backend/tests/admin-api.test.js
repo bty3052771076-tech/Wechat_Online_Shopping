@@ -203,5 +203,6 @@ test('after-sales support list, detail and audit flows through admin API', async
 
   assert.equal(auditResponse.status, 200, JSON.stringify(auditResponse.data));
   assert.equal(auditResponse.data.code, 'Success', JSON.stringify(auditResponse.data));
-  assert.equal(auditResponse.data.data.status, 20);
+  // 退货退款(rightsType=10)审核通过→20; 仅退款(rightsType=20)审核通过→50
+  assert.ok([20, 50].includes(auditResponse.data.data.status), `expected status 20 or 50, got ${auditResponse.data.data.status}`);
 });

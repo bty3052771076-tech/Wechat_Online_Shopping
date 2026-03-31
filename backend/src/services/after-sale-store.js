@@ -1,7 +1,5 @@
-const { readJson, writeJson } = require('./json-store');
+const AfterSale = require('../models/AfterSale');
 const { IMAGE_SCENES, normalizeImageUrl } = require('../utils/image');
-
-const AFTER_SALE_FILE = 'after-sales.json';
 
 const LOGISTICS_COMPANIES = [
   { name: '中通快递', code: '0001' },
@@ -9,109 +7,6 @@ const LOGISTICS_COMPANIES = [
   { name: '圆通快递', code: '0003' },
   { name: '顺丰速运', code: 'SF' },
   { name: '百世快递', code: '0005' },
-];
-
-const DEFAULT_AFTER_SALES = [
-  {
-    rightsNo: 'AS20260303001',
-    orderNo: 'ORDER20260303001',
-    userId: 1,
-    userName: '测试用户',
-    storeId: 'default-store',
-    storeName: '默认店铺',
-    rightsType: 10,
-    rightsReasonType: 2,
-    rightsReasonDesc: '商品有划痕',
-    refundAmount: 29900,
-    refundRequestAmount: 29900,
-    rightsStatus: 10,
-    createTime: '2026-03-03 11:00:00',
-    refundMemo: '收到商品后发现有划痕',
-    rightsImageUrls: ['https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png'],
-    goodsItems: [
-      {
-        skuId: 1,
-        spuId: 1,
-        goodsName: '不锈钢刀叉勺套装',
-        goodsPictureUrl: 'https://tdesign.gtimg.com/miniprogram/template/retail/goods/gh-2b.png',
-        specInfo: [{ specTitle: '规格', specValues: '四件套' }],
-        itemRefundAmount: 29900,
-        rightsQuantity: 1,
-      },
-    ],
-    logisticsVO: {
-      logisticsType: 1,
-      logisticsNo: '',
-      logisticsStatus: null,
-      logisticsCompanyCode: '',
-      logisticsCompanyName: '',
-      receiverName: '测试用户',
-      receiverPhone: '13800138000',
-      receiverProvince: '',
-      receiverCity: '',
-      receiverCountry: '',
-      receiverArea: '',
-      receiverAddress: '深圳市南山区科技园',
-      remark: '',
-      nodes: [],
-    },
-    rightsRefund: {
-      traceNo: 'TRACE20260303001',
-      refundDesc: '商品有划痕',
-      refundAmount: 29900,
-    },
-    refundMethodList: [{ refundMethodName: '微信支付', refundMethodAmount: 29900 }],
-  },
-  {
-    rightsNo: 'AS20260302002',
-    orderNo: 'ORDER20260302002',
-    userId: 2,
-    userName: '张三',
-    storeId: 'default-store',
-    storeName: '默认店铺',
-    rightsType: 20,
-    rightsReasonType: 2,
-    rightsReasonDesc: '不想要了',
-    refundAmount: 19800,
-    refundRequestAmount: 19800,
-    rightsStatus: 50,
-    createTime: '2026-03-02 18:00:00',
-    refundMemo: '申请仅退款',
-    rightsImageUrls: [],
-    goodsItems: [
-      {
-        skuId: 2,
-        spuId: 2,
-        goodsName: '白色短袖连衣裙',
-        goodsPictureUrl: 'https://tdesign.gtimg.com/miniprogram/template/retail/goods/nz-09a.png',
-        specInfo: [{ specTitle: '颜色', specValues: '白色' }],
-        itemRefundAmount: 19800,
-        rightsQuantity: 1,
-      },
-    ],
-    logisticsVO: {
-      logisticsType: 1,
-      logisticsNo: '',
-      logisticsStatus: null,
-      logisticsCompanyCode: '',
-      logisticsCompanyName: '',
-      receiverName: '张三',
-      receiverPhone: '13900139000',
-      receiverProvince: '',
-      receiverCity: '',
-      receiverCountry: '',
-      receiverArea: '',
-      receiverAddress: '北京市朝阳区测试路 1 号',
-      remark: '',
-      nodes: [],
-    },
-    rightsRefund: {
-      traceNo: 'TRACE20260302002',
-      refundDesc: '退款成功',
-      refundAmount: 19800,
-    },
-    refundMethodList: [{ refundMethodName: '微信支付', refundMethodAmount: 19800 }],
-  },
 ];
 
 function parseNumber(value, fallback = 0) {
@@ -128,6 +23,69 @@ function formatDateTime(date = new Date()) {
   const second = String(date.getSeconds()).padStart(2, '0');
 
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
+// DB 行 → 原始 record 结构（供 hydrateRecord 使用）
+function dbToRecord(row) {
+  const data = row.toJSON ? row.toJSON() : row;
+  // DB 存储元为单位，store 内部用分
+  const refundFen = Math.round(parseNumber(data.refund_amount, 0) * 100);
+
+  return {
+    rightsNo: data.after_sale_no,
+    orderNo: data.order_no,
+    userId: data.user_id,
+    userName: data.user_name || '',
+    storeId: 'default-store',
+    storeName: '默认店铺',
+    // DB type: 1=退款, 2=退货 → rightsType: 20=仅退款, 10=退货退款
+    rightsType: data.type === 2 ? 10 : 20,
+    rightsReasonDesc: data.reason || '',
+    refundAmount: refundFen,
+    refundRequestAmount: refundFen,
+    rightsStatus: data.rights_status || 10,
+    createTime: data.created_at ? formatDateTime(new Date(data.created_at)) : '',
+    refundMemo: data.description || '',
+    rightsImageUrls: Array.isArray(data.proof_images) ? data.proof_images : [],
+    goodsItems: Array.isArray(data.goods_items) ? data.goods_items : [],
+    logisticsVO: data.logistics_vo || {},
+    rightsRefund: {
+      traceNo: `TRACE${data.after_sale_no}`,
+      refundDesc: data.description || data.reason || '',
+      refundAmount: refundFen,
+    },
+    refundMethodList: [{ refundMethodName: '微信支付', refundMethodAmount: refundFen }],
+  };
+}
+
+// 原始 record → DB 字段映射
+function recordToDbFields(record) {
+  const rightsType = parseNumber(record.rightsType, 20);
+  // rightsType 10=退货退款→DB type 2, 其余→DB type 1
+  const dbType = rightsType === 10 ? 2 : 1;
+  const rightsStatus = parseNumber(record.rightsStatus, 10);
+  // rights_status: 10→status 1, 60→status 3, 其余→status 2
+  const dbStatus = rightsStatus === 10 ? 1 : rightsStatus === 60 ? 3 : 2;
+  // 分 → 元
+  const refundAmountYuan = parseNumber(record.refundAmount, 0) / 100;
+
+  return {
+    after_sale_no: record.rightsNo,
+    order_no: record.orderNo,
+    user_id: record.userId,
+    user_name: record.userName || null,
+    type: dbType,
+    reason: record.rightsReasonDesc || null,
+    description: record.refundMemo || null,
+    proof_images: Array.isArray(record.rightsImageUrls) ? record.rightsImageUrls : null,
+    refund_amount: refundAmountYuan,
+    rights_status: rightsStatus,
+    status: dbStatus,
+    goods_items: Array.isArray(record.goodsItems) && record.goodsItems.length > 0
+      ? record.goodsItems : null,
+    logistics_vo: record.logisticsVO && Object.keys(record.logisticsVO).length > 0
+      ? record.logisticsVO : null,
+  };
 }
 
 function buildStatusMeta(record = {}) {
@@ -266,41 +224,39 @@ function hydrateRecord(record = {}) {
   };
 }
 
-function getAfterSales() {
-  const list = readJson(AFTER_SALE_FILE, DEFAULT_AFTER_SALES);
-  return Array.isArray(list) ? list.map((item) => hydrateRecord(item)) : [];
-}
-
-function saveAfterSales(list) {
-  return writeJson(AFTER_SALE_FILE, list.map((item) => hydrateRecord(item)));
-}
-
-function listAfterSales({ userId, status } = {}) {
-  let list = getAfterSales();
+async function listAfterSales({ userId, status } = {}) {
+  const where = {};
 
   if (userId !== undefined) {
-    list = list.filter((item) => String(item.userId) === String(userId));
+    where.user_id = userId;
   }
 
   if (status !== undefined && status !== null && status !== '') {
-    list = list.filter((item) => parseNumber(item.rightsStatus) === parseNumber(status));
+    where.rights_status = parseNumber(status);
   }
 
-  return list.sort((left, right) => String(right.createTime).localeCompare(String(left.createTime)));
+  const rows = await AfterSale.findAll({
+    where,
+    order: [['created_at', 'DESC']],
+  });
+
+  return rows.map((row) => hydrateRecord(dbToRecord(row)));
 }
 
-function findAfterSale(rightsNo, userId) {
-  const record = getAfterSales().find((item) => item.rightsNo === rightsNo);
+async function findAfterSale(rightsNo, userId) {
+  const where = { after_sale_no: rightsNo };
 
-  if (!record) {
+  if (userId !== undefined) {
+    where.user_id = userId;
+  }
+
+  const row = await AfterSale.findOne({ where });
+
+  if (!row) {
     return null;
   }
 
-  if (userId !== undefined && String(record.userId) !== String(userId)) {
-    return null;
-  }
-
-  return record;
+  return hydrateRecord(dbToRecord(row));
 }
 
 function buildStates(list = []) {
@@ -312,30 +268,35 @@ function buildStates(list = []) {
   };
 }
 
-function updateAfterSale(rightsNo, updater) {
-  const list = getAfterSales();
-  const index = list.findIndex((item) => item.rightsNo === rightsNo);
+async function updateAfterSale(rightsNo, updater) {
+  const row = await AfterSale.findOne({ where: { after_sale_no: rightsNo } });
 
-  if (index < 0) {
+  if (!row) {
     return null;
   }
 
-  const nextRecord =
-    typeof updater === 'function'
-      ? updater(hydrateRecord(list[index]))
-      : { ...hydrateRecord(list[index]), ...updater };
+  const currentRecord = hydrateRecord(dbToRecord(row));
+  const nextRecord = typeof updater === 'function'
+    ? updater(currentRecord)
+    : { ...currentRecord, ...updater };
 
-  list[index] = hydrateRecord(nextRecord);
-  saveAfterSales(list);
-  return list[index];
+  const dbFields = recordToDbFields(nextRecord);
+  await row.update(dbFields);
+
+  return hydrateRecord(dbToRecord(row));
 }
 
-function createAfterSale(record) {
-  const list = getAfterSales();
-  const nextRecord = hydrateRecord(record);
-  list.unshift(nextRecord);
-  saveAfterSales(list);
-  return nextRecord;
+async function createAfterSale(record) {
+  const dbFields = recordToDbFields(record);
+
+  // 如果调用方传了 orderId，写入 order_id 列
+  if (record.orderId) {
+    dbFields.order_id = record.orderId;
+  }
+
+  const row = await AfterSale.create(dbFields);
+
+  return hydrateRecord(dbToRecord(row));
 }
 
 function createRightsNo() {

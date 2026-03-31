@@ -47,6 +47,17 @@
         </view>
       </view>
       <view class="goods-intro">{{intro}}</view>
+      <!-- 生产日期 / 保质期 -->
+      <view wx:if="{{productionDate || shelfLife}}" class="goods-meta">
+        <view wx:if="{{productionDate}}" class="goods-meta-item">
+          <text class="goods-meta-label">生产日期</text>
+          <text class="goods-meta-value">{{productionDate}}</text>
+        </view>
+        <view wx:if="{{shelfLife}}" class="goods-meta-item">
+          <text class="goods-meta-label">保质期</text>
+          <text class="goods-meta-value">{{shelfLife}}天</text>
+        </view>
+      </view>
     </view>
     <view class="spu-select" bindtap="showSkuSelectPopup">
       <view class="label">已选</view>

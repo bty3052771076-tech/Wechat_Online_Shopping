@@ -371,6 +371,12 @@ function buildCreateOrderPayload(params) {
     payload.remark = remarks.join('; ');
   }
 
+  // 传递已选优惠券 ID（user_coupon 记录 ID）
+  const userCouponId = params && params.userCouponId;
+  if (userCouponId) {
+    payload.userCouponId = toSafeString(userCouponId);
+  }
+
   return payload;
 }
 

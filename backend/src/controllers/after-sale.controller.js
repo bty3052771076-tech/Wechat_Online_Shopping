@@ -165,8 +165,9 @@ class AfterSaleController {
         specValues: spec.specValue || spec.specValues || '',
       }));
 
-      const created = createAfterSale({
+      const created = await createAfterSale({
         rightsNo,
+        orderId: order.id,
         orderNo,
         userId,
         userName: (user && (user.nickname || user.username)) || '',
@@ -223,93 +224,107 @@ class AfterSaleController {
     }
   }
 
-  getList(req, res) {
-    const userId = req.user.user_id;
-    const { status, page = 1, pageSize = 10 } = req.query;
-    const fullList = listAfterSales({ userId });
-    const filteredList =
-      status !== undefined && status !== ''
-        ? fullList.filter((item) => Number(item.rightsStatus) === Number(status))
-        : fullList;
-    const currentPage = Number(page) || 1;
-    const currentPageSize = Number(pageSize) || 10;
-    const start = (currentPage - 1) * currentPageSize;
-    const pagedList = filteredList.slice(start, start + currentPageSize);
+  async getList(req, res, next) {
+    try {
+      const userId = req.user.user_id;
+      const { status, page = 1, pageSize = 10 } = req.query;
+      const fullList = await listAfterSales({ userId });
+      const filteredList =
+        status !== undefined && status !== ''
+          ? fullList.filter((item) => Number(item.rightsStatus) === Number(status))
+          : fullList;
+      const currentPage = Number(page) || 1;
+      const currentPageSize = Number(pageSize) || 10;
+      const start = (currentPage - 1) * currentPageSize;
+      const pagedList = filteredList.slice(start, start + currentPageSize);
 
-    return successResponse(res, 200, '获取成功', {
-      list: pagedList,
-      pagination: {
-        page: currentPage,
-        pageSize: currentPageSize,
-        total: filteredList.length,
-      },
-      states: buildStates(fullList),
-    });
-  }
-
-  getDetail(req, res) {
-    const userId = req.user.user_id;
-    const { rightsNo } = req.params;
-    const detail = findAfterSale(rightsNo, userId);
-
-    if (!detail) {
-      return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
-    }
-
-    return successResponse(res, 200, '获取成功', detail);
-  }
-
-  cancel(req, res) {
-    const userId = req.user.user_id;
-    const { rightsNo } = req.params;
-    const detail = findAfterSale(rightsNo, userId);
-
-    if (!detail) {
-      return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
-    }
-
-    const updated = updateAfterSale(rightsNo, {
-      rightsStatus: 60,
-    });
-
-    return successResponse(res, 200, '撤销成功', updated);
-  }
-
-  updateLogistics(req, res) {
-    const userId = req.user.user_id;
-    const { rightsNo } = req.params;
-    const { logisticsCompanyCode = '', logisticsCompanyName = '', logisticsNo = '', remark = '' } = req.body;
-    const detail = findAfterSale(rightsNo, userId);
-
-    if (!detail) {
-      return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
-    }
-
-    const updated = updateAfterSale(rightsNo, (current) =>
-      hydrateRecord({
-        ...current,
-        rightsStatus: current.rightsStatus === 10 ? 20 : current.rightsStatus,
-        logisticsVO: {
-          ...(current.logisticsVO || {}),
-          logisticsCompanyCode,
-          logisticsCompanyName,
-          logisticsNo,
-          remark,
-          nodes: logisticsNo
-            ? [
-                {
-                  title: '已寄回',
-                  code: '200002',
-                  desc: '买家已填写退货物流信息',
-                  date: formatDateTime(new Date()),
-                },
-              ]
-            : [],
+      return successResponse(res, 200, '获取成功', {
+        list: pagedList,
+        pagination: {
+          page: currentPage,
+          pageSize: currentPageSize,
+          total: filteredList.length,
         },
-      }),
-    );
+        states: buildStates(fullList),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
-    return successResponse(res, 200, '保存成功', updated);
+  async getDetail(req, res, next) {
+    try {
+      const userId = req.user.user_id;
+      const { rightsNo } = req.params;
+      const detail = await findAfterSale(rightsNo, userId);
+
+      if (!detail) {
+        return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
+      }
+
+      return successResponse(res, 200, '获取成功', detail);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async cancel(req, res, next) {
+    try {
+      const userId = req.user.user_id;
+      const { rightsNo } = req.params;
+      const detail = await findAfterSale(rightsNo, userId);
+
+      if (!detail) {
+        return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
+      }
+
+      const updated = await updateAfterSale(rightsNo, { rightsStatus: 60 });
+
+      return successResponse(res, 200, '撤销成功', updated);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateLogistics(req, res, next) {
+    try {
+      const userId = req.user.user_id;
+      const { rightsNo } = req.params;
+      const { logisticsCompanyCode = '', logisticsCompanyName = '', logisticsNo = '', remark = '' } = req.body;
+      const detail = await findAfterSale(rightsNo, userId);
+
+      if (!detail) {
+        return errorResponse(res, 404, 'AfterSaleNotFound', '售后单不存在');
+      }
+
+      const updated = await updateAfterSale(rightsNo, (current) =>
+        hydrateRecord({
+          ...current,
+          rightsStatus: current.rightsStatus === 10 ? 20 : current.rightsStatus,
+          logisticsVO: {
+            ...(current.logisticsVO || {}),
+            logisticsCompanyCode,
+            logisticsCompanyName,
+            logisticsNo,
+            remark,
+            nodes: logisticsNo
+              ? [
+                  {
+                    title: '已寄回',
+                    code: '200002',
+                    desc: '买家已填写退货物流信息',
+                    date: formatDateTime(new Date()),
+                  },
+                ]
+              : [],
+          },
+        }),
+      );
+
+      return successResponse(res, 200, '保存成功', updated);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async confirmReceived(req, res, next) {

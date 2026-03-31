@@ -1,4 +1,4 @@
-const { BIGINT, STRING, INTEGER, TINYINT, DATE, DECIMAL } = require('sequelize');
+const { BIGINT, STRING, INTEGER, TINYINT, DATE, DECIMAL, TEXT } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcrypt');
 
@@ -87,6 +87,12 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 0.00,
     comment: '总消费金额（元）'
+  },
+  admin_notes: {
+    type: TEXT,
+    allowNull: true,
+    defaultValue: null,
+    comment: '管理员备注'
   }
 }, {
   tableName: 'users',

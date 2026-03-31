@@ -243,9 +243,10 @@ Component({
       const imgUrl = goods && goods.thumb;
       const title = goods && goods.title;
       const specs = goods && goods.specs;
+      const spuId = goods && goods.spuId;  // 传递 spuId 用于提交评论
 
       wx.navigateTo({
-        url: `/pages/goods/comments/create/index?specs=${specs}&title=${title}&orderNo=${order.orderNo}&imgUrl=${imgUrl}`,
+        url: `/pages/goods/comments/create/index?specs=${specs}&title=${title}&orderNo=${order.orderNo}&imgUrl=${imgUrl}&spuId=${spuId}`,
       });
     },
   },

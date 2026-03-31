@@ -12,6 +12,8 @@ const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/order');
 const addressRoutes = require('./routes/address');
 const agentRoutes = require('./routes/agent');
+const bannerRoutes = require('./routes/banner');
+const couponRoutes = require('./routes/coupon');
 const sequelize = require('./config/database');
 
 require('./models');
@@ -40,6 +42,10 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/banners', bannerRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/favorites', require('./routes/favorite'));
+app.use('/api/promotions', require('./routes/promotion'));
 
 app.get('/health', (req, res) => {
   res.json({

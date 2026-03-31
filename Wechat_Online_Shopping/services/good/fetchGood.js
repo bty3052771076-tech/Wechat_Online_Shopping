@@ -107,6 +107,8 @@ function realFetchGood(ID = 0) {
           specList: buildSpecListFromSkus(item.skus || []),
           desc: detailImages,
           spuTagList: [],
+          productionDate: item.production_date || '',
+          shelfLife: item.shelf_life || null,
         });
       },
       fail(err) {

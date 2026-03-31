@@ -184,7 +184,7 @@ test('GET /api/orders/list counts unique orders when an order has multiple items
   const response = await api.get('/api/orders/list', {
     params: {
       page: 1,
-      pageSize: 200,
+      pageSize: 9999,
     },
     headers: {
       Authorization: `Bearer ${token}`,

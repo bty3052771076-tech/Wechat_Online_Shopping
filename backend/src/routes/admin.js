@@ -6,6 +6,7 @@ const adminOrderController = require('../controllers/admin-order.controller');
 const adminUserController = require('../controllers/admin-user.controller');
 const adminDeliveryController = require('../controllers/admin-delivery.controller');
 const adminAfterSaleController = require('../controllers/admin-after-sale.controller');
+const adminCouponController = require('../controllers/admin-coupon.controller');
 const { requireAdminAuth } = require('../middlewares/admin-auth');
 
 router.post('/login', adminController.login);
@@ -34,5 +35,10 @@ router.delete('/delivery-areas/:id', requireAdminAuth, adminDeliveryController.r
 router.get('/after-sales', requireAdminAuth, adminAfterSaleController.getList);
 router.get('/after-sales/:id', requireAdminAuth, adminAfterSaleController.getDetail);
 router.put('/after-sales/:id/audit', requireAdminAuth, adminAfterSaleController.audit);
+
+router.get('/coupons', requireAdminAuth, adminCouponController.getList);
+router.post('/coupons', requireAdminAuth, adminCouponController.create);
+router.put('/coupons/:id', requireAdminAuth, adminCouponController.update);
+router.delete('/coupons/:id', requireAdminAuth, adminCouponController.remove);
 
 module.exports = router;

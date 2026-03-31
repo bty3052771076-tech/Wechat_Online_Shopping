@@ -82,6 +82,8 @@ Page({
     intro: '',
     promotionSubCode: '',
     anonymityAvatar: DEFAULT_COMMENT_AVATAR,
+    productionDate: '',
+    shelfLife: null,
   },
 
   handlePopupHide() {
@@ -330,6 +332,8 @@ Page({
         soldout: details.isPutOnSale === 0,
         soldNum: details.soldNum || 0,
         intro: details.subtitle || '',
+        productionDate: details.productionDate || '',
+        shelfLife: details.shelfLife || null,
       });
     });
   },

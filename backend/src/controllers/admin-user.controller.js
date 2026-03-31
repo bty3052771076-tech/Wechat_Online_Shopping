@@ -1,9 +1,6 @@
 const { Op } = require('sequelize');
 const { User, Order } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
-const { readJson, writeJson } = require('../services/json-store');
-
-const USER_REMARKS_FILE = 'admin-user-remarks.json';
 
 class AdminUserController {
   async getUsers(req, res, next) {
@@ -24,7 +21,6 @@ class AdminUserController {
         attributes: { exclude: ['password'] },
         order: [['register_time', 'DESC']],
       });
-      const remarkMap = readJson(USER_REMARKS_FILE, {});
 
       return successResponse(
         res,
@@ -32,7 +28,7 @@ class AdminUserController {
         '获取成功',
         users.map((user) => ({
           ...user.toJSON(),
-          remark: remarkMap[String(user.id)] || '',
+          remark: user.admin_notes || '',
         })),
       );
     } catch (error) {
@@ -57,11 +53,10 @@ class AdminUserController {
         order: [['created_at', 'DESC']],
         limit: 20,
       });
-      const remarkMap = readJson(USER_REMARKS_FILE, {});
 
       return successResponse(res, 200, '获取成功', {
         ...user.toJSON(),
-        remark: remarkMap[String(user.id)] || '',
+        remark: user.admin_notes || '',
         orderHistory: orders.map((order) => order.toJSON()),
       });
     } catch (error) {
@@ -79,13 +74,12 @@ class AdminUserController {
         return errorResponse(res, 404, 'UserNotFound', '用户不存在');
       }
 
-      const remarkMap = readJson(USER_REMARKS_FILE, {});
-      remarkMap[String(id)] = String(remark).trim();
-      writeJson(USER_REMARKS_FILE, remarkMap);
+      // 备注直接存入 users.admin_notes 列，不再使用 JSON 文件
+      await user.update({ admin_notes: String(remark).trim() || null });
 
       return successResponse(res, 200, '备注已更新', {
         id: user.id,
-        remark: remarkMap[String(id)],
+        remark: user.admin_notes || '',
       });
     } catch (error) {
       next(error);

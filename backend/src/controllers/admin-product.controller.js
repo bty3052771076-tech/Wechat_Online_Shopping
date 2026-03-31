@@ -184,6 +184,16 @@ class AdminProductController {
       }));
       const summary = summarizeSkuMetrics(normalizedSkus);
 
+      // 从 productDetail JSON 中提取生产日期和保质期独立列
+      let parsedDetail = {};
+      try {
+        parsedDetail = typeof productDetail === 'string' ? JSON.parse(productDetail) : (productDetail || {});
+      } catch (_) {
+        parsedDetail = {};
+      }
+      const productionDateVal = parsedDetail.productionDate || null;
+      const shelfLifeVal = parsedDetail.shelfLife ? Number(parsedDetail.shelfLife) || null : null;
+
       const spu = await ProductSpus.create(
         {
           spu_code: `SPU${Date.now()}`,
@@ -194,6 +204,8 @@ class AdminProductController {
           primary_image: primaryImage,
           detail_images: stringifyJson(detailImages || []),
           product_detail: typeof productDetail === 'string' ? productDetail : stringifyJson(productDetail),
+          production_date: productionDateVal,
+          shelf_life: shelfLifeVal,
           min_sale_price: summary.minSalePrice,
           max_line_price: summary.maxLinePrice,
           total_stock: summary.totalStock,
@@ -276,6 +288,19 @@ class AdminProductController {
       if (detailImages !== undefined) updateData.detail_images = stringifyJson(detailImages || []);
       if (productDetail !== undefined) {
         updateData.product_detail = typeof productDetail === 'string' ? productDetail : stringifyJson(productDetail);
+        // 同步提取生产日期和保质期到独立列
+        let parsedDetailUpdate = {};
+        try {
+          parsedDetailUpdate = typeof productDetail === 'string' ? JSON.parse(productDetail) : (productDetail || {});
+        } catch (_) {
+          parsedDetailUpdate = {};
+        }
+        if (parsedDetailUpdate.productionDate !== undefined) {
+          updateData.production_date = parsedDetailUpdate.productionDate || null;
+        }
+        if (parsedDetailUpdate.shelfLife !== undefined) {
+          updateData.shelf_life = parsedDetailUpdate.shelfLife ? Number(parsedDetailUpdate.shelfLife) || null : null;
+        }
       }
       if (tags !== undefined) updateData.tags = Array.isArray(tags) ? tags.join(',') : tags;
       if (status !== undefined) updateData.status = Number(status);

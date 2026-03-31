@@ -1,4 +1,7 @@
 import { config } from '../../config/index';
+import { buildAuthHeader } from '../_utils/auth';
+
+const { requestJson } = require('../_utils/request');
 
 /** 获取优惠券列表 */
 function mockFetchCoupon(status) {
@@ -7,17 +10,21 @@ function mockFetchCoupon(status) {
   return delay().then(() => getCouponList(status));
 }
 
-/** 获取优惠券列表 */
+/** 获取当前用户的优惠券列表（status: 'default'|'useless'|'disabled'） */
 export function fetchCouponList(status = 'default') {
   if (config.useMock) {
     return mockFetchCoupon(status);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  return requestJson({
+    url: `${config.apiBaseURL}/coupons/user?status=${status}`,
+    method: 'GET',
+    header: { ...buildAuthHeader() },
+  }).then((res) => {
+    return Array.isArray(res && res.data) ? res.data : [];
   });
 }
 
-/** 获取优惠券 详情 */
+/** 获取优惠券详情 — 从可领取列表中找（兼容原有 mock 数据结构） */
 function mockFetchCouponDetail(id, status) {
   const { delay } = require('../_utils/delay');
   const { getCoupon } = require('../../model/coupon');
@@ -54,12 +61,30 @@ function mockFetchCouponDetail(id, status) {
   });
 }
 
-/** 获取优惠券 详情 */
+/** 获取优惠券详情 */
 export function fetchCouponDetail(id, status = 'default') {
   if (config.useMock) {
     return mockFetchCouponDetail(id, status);
   }
-  return new Promise((resolve) => {
-    resolve('real api');
+  // 从可领取列表查找目标优惠券
+  return requestJson({
+    url: `${config.apiBaseURL}/coupons`,
+    method: 'GET',
+  }).then((res) => {
+    const list = Array.isArray(res && res.data) ? res.data : [];
+    const item = list.find((c) => String(c.id) === String(id)) || list[0] || null;
+    return { detail: item, storeInfoList: [] };
+  });
+}
+
+/** 领取优惠券 */
+export function claimCoupon(couponId) {
+  return requestJson({
+    url: `${config.apiBaseURL}/coupons/${couponId}/claim`,
+    method: 'POST',
+    header: {
+      ...buildAuthHeader(),
+      'Content-Type': 'application/json',
+    },
   });
 }
