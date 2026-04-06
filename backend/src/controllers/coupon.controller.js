@@ -1,4 +1,4 @@
-const { Coupon, UserCoupon, sequelize } = require('../models');
+const { Coupon, CouponCategory, Category, ProductSpus, UserCoupon, sequelize } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
 const { Op } = require('sequelize');
 
@@ -40,6 +40,61 @@ function toUserCouponResponse(row) {
 }
 
 class CouponController {
+  // GET /api/coupons/:id/goods — 获取优惠券适用商品列表 (#21)
+  async getGoods(req, res, next) {
+    try {
+      const { id } = req.params;
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 20));
+      const offset = (page - 1) * pageSize;
+
+      // 查询该优惠券绑定的分类
+      const bindings = await CouponCategory.findAll({
+        where: { coupon_id: id },
+        include: [{ model: Category, as: 'category', attributes: ['id', 'category_name'] }],
+      });
+
+      let whereClause = { status: 1 };
+      let isGlobal = false;
+      let categoryNames = [];
+
+      if (bindings.length === 0) {
+        // 无绑定记录 → 全场通用
+        isGlobal = true;
+      } else {
+        const catIds = bindings.map((b) => Number(b.category_id));
+        categoryNames = bindings.map((b) => b.category && b.category.category_name).filter(Boolean);
+        whereClause.category_id = { [Op.in]: catIds };
+      }
+
+      const { count, rows } = await ProductSpus.findAndCountAll({
+        where: whereClause,
+        attributes: ['id', 'title', 'primary_image', 'min_sale_price', 'max_line_price', 'tags'],
+        order: [['id', 'ASC']],
+        limit: pageSize,
+        offset,
+      });
+
+      return successResponse(res, 200, '获取成功', {
+        isGlobal,
+        categoryNames,
+        list: rows.map((r) => ({
+          id: r.id,
+          title: r.title || '',
+          primary_image: r.primary_image || '',
+          min_sale_price: r.min_sale_price || 0,
+          max_line_price: r.max_line_price || 0,
+          tags: r.tags ? r.tags.split(',').filter(Boolean) : [],
+        })),
+        total: count,
+        page,
+        pageSize,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // GET /api/coupons — 获取可领取的优惠券列表
   async getAvailable(req, res, next) {
     try {
