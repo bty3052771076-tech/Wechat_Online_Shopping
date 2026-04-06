@@ -17,6 +17,7 @@
         <view class="meta-row"><text class="meta-label">有效期:</text><text class="meta-value">{{item.startTime ? item.startTime : '—'}} ~ {{item.endTime ? item.endTime : '—'}}</text></view>
         <view class="meta-row"><text class="meta-label">库存:</text><text class="meta-value">{{item.totalQuantity === 0 ? '不限' : item.totalQuantity}} / 已领{{item.receivedQuantity}}</text></view>
         <view class="meta-row"><text class="meta-label">状态:</text><text class="meta-value {{item.status === 1 ? 'on' : 'off'}}">{{item.statusLabel}}</text></view>
+        <view class="meta-row"><text class="meta-label">适用:</text><text class="meta-value">{{item.categoryLabel}}</text></view>
       </view>
       <view class="card-footer">
         <t-button size="small" variant="outline" data-id="{{item.id}}" bind:tap="onEdit">编辑</t-button>
@@ -63,6 +64,14 @@
       <view class="form-row">
         <text class="form-label">结束日期*</text>
         <t-input value="{{formData.endTime}}" data-field="endTime" bind:change="onFormInput" placeholder="YYYY-MM-DD" />
+      </view>
+      <!-- 适用分类多选 (#21)，不选则全场通用 -->
+      <view class="form-row">
+        <text class="form-label">适用分类</text>
+        <view class="form-hint">不选则全场通用</view>
+        <t-checkbox-group value="{{selectedCategoryIds}}" bind:change="onCategoryChange">
+          <t-checkbox wx:for="{{categoryOptions}}" wx:key="value" value="{{item.value}}">{{item.label}}</t-checkbox>
+        </t-checkbox-group>
       </view>
       <view class="dialog-footer">
         <t-button variant="outline" bind:tap="onCancel">取消</t-button>

@@ -3,6 +3,16 @@ import { fetchAdminCouponList, createAdminCoupon, updateAdminCoupon, deleteAdmin
 const TYPE_LABELS = { 1: '满减券', 2: '折扣券' };
 const STATUS_LABELS = { 0: '已下架', 1: '上架中' };
 
+// 一级分类列表（与 DB categories 表 level=1 数据对齐） (#21)
+const CATEGORY_OPTIONS = [
+  { label: '生鲜食品', value: 1 },
+  { label: '日用百货', value: 2 },
+  { label: '美妆个护', value: 3 },
+  { label: '食品饮料', value: 18 },
+  { label: '数码家电', value: 19 },
+  { label: '母婴用品', value: 20 },
+];
+
 Page({
   data: {
     list: [],
@@ -19,6 +29,8 @@ Page({
       startTime: '',
       endTime: '',
     },
+    categoryOptions: CATEGORY_OPTIONS,  // 分类选项 (#21)
+    selectedCategoryIds: [],            // 当前选中的分类 IDs (#21)
   },
 
   onLoad() {
@@ -37,6 +49,10 @@ Page({
           valueDesc: item.couponType === 2
             ? `${item.discountValue}折`
             : `减${item.discountValue}元`,
+          // 适用分类标签 (#21)
+          categoryLabel: Array.isArray(item.categoryIds) && item.categoryIds.length > 0
+            ? CATEGORY_OPTIONS.filter((o) => item.categoryIds.includes(o.value)).map((o) => o.label).join('/')
+            : '全场',
         })),
       });
     });
@@ -48,6 +64,7 @@ Page({
       isAdd: true,
       editingId: null,
       formData: { couponName: '', couponType: '1', discountValue: '', minAmount: '0', totalQuantity: '0', validDays: '30', startTime: '', endTime: '' },
+      selectedCategoryIds: [],  // 重置分类选择 (#21)
     });
   },
 
@@ -69,6 +86,8 @@ Page({
         startTime: item.startTime ? String(item.startTime).slice(0, 10) : '',
         endTime: item.endTime ? String(item.endTime).slice(0, 10) : '',
       },
+      // 回填已绑定分类 (#21)
+      selectedCategoryIds: Array.isArray(item.categoryIds) ? item.categoryIds : [],
     });
   },
 
@@ -77,8 +96,13 @@ Page({
     this.setData({ [`formData.${field}`]: e.detail.value });
   },
 
+  // 分类多选框变化处理 (#21)
+  onCategoryChange(e) {
+    this.setData({ selectedCategoryIds: e.detail.value.map(Number) });
+  },
+
   onSave() {
-    const { formData, isAdd, editingId } = this.data;
+    const { formData, isAdd, editingId, selectedCategoryIds } = this.data;
     if (!formData.couponName.trim() || !formData.discountValue || !formData.startTime || !formData.endTime) {
       wx.showToast({ title: '请填写必填字段', icon: 'none' });
       return;
@@ -92,6 +116,7 @@ Page({
       validDays: Number(formData.validDays || 30),
       startTime: formData.startTime,
       endTime: formData.endTime,
+      categoryIds: selectedCategoryIds,  // 适用分类 (#21)
     };
     const promise = isAdd ? createAdminCoupon(payload) : updateAdminCoupon(editingId, payload);
     promise.then((res) => {
