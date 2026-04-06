@@ -1,5 +1,4 @@
-import { fetchCouponDetail } from '../../../services/coupon/index';
-import { fetchGoodsList } from '../../../services/good/fetchGoods';
+import { fetchCouponDetail, fetchCouponGoods } from '../../../services/coupon/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 Page({
@@ -9,6 +8,8 @@ Page({
     couponTypeDesc: '',
     showStoreInfoList: false,
     cartNum: 2,
+    isGlobal: false,       // 是否全场通用 (#21)
+    categoryNames: [],     // 适用分类名称列表 (#21)
   },
 
   id: '',
@@ -44,9 +45,10 @@ Page({
     });
   },
 
+  // 通过 fetchCouponGoods 获取按分类过滤的商品列表 (#21)
   getGoodsList(id) {
-    fetchGoodsList(id).then((goods) => {
-      this.setData({ goods });
+    fetchCouponGoods(id).then(({ isGlobal, categoryNames, list }) => {
+      this.setData({ goods: list, isGlobal, categoryNames });
     });
   },
 

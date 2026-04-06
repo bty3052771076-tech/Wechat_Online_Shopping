@@ -7,6 +7,13 @@
     </view>
     <t-icon name="help-circle" size="32rpx" color="#AAAAAA" bind:tap="openStoreList" />
   </view>
+  <!-- 适用范围说明横幅 (#21) -->
+  <view wx:if="{{isGlobal}}" class="scope-banner scope-global">
+    本券适用于全部在售商品
+  </view>
+  <view wx:elif="{{categoryNames.length > 0}}" class="scope-banner scope-category">
+    适用分类：{{categoryNames.join(' / ')}}
+  </view>
   <view class="goods-list-container">
     <goods-list
       wr-class="goods-list-wrap"

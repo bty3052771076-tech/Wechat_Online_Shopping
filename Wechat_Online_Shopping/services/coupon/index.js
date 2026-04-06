@@ -88,3 +88,26 @@ export function claimCoupon(couponId) {
     },
   });
 }
+
+/** 获取优惠券适用商品列表 (#21) */
+export function fetchCouponGoods(couponId, page = 1, pageSize = 20) {
+  return requestJson({
+    url: `${config.apiBaseURL}/coupons/${couponId}/goods?page=${page}&pageSize=${pageSize}`,
+    method: 'GET',
+  }).then((res) => {
+    const data = (res && res.data) || {};
+    return {
+      isGlobal: !!data.isGlobal,
+      categoryNames: Array.isArray(data.categoryNames) ? data.categoryNames : [],
+      list: Array.isArray(data.list) ? data.list.map((item) => ({
+        spuId: item.id,
+        thumb: item.primary_image || '',
+        title: item.title || '',
+        price: item.min_sale_price || 0,
+        originPrice: item.max_line_price || 0,
+        tags: Array.isArray(item.tags) ? item.tags : [],
+      })) : [],
+      total: data.total || 0,
+    };
+  });
+}

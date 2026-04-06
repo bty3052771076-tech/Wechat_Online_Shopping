@@ -64,6 +64,25 @@ page {
   margin: 0 24rpx 24rpx;
 }
 
+/* 适用范围横幅 (#21) */
+.scope-banner {
+  margin: 8rpx 24rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.scope-global {
+  background: #fff8e6;
+  color: #fa8c16;
+}
+
+.scope-category {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
 .coupon-page-container .goods-list-wrap {
   background: #f5f5f5 !important;
 }
