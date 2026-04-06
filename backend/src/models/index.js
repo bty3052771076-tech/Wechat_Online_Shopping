@@ -31,6 +31,7 @@ const ProductBrowseHistory = require('./ProductBrowseHistory');
 const Favorite = require('./Favorite');
 const Promotion = require('./Promotion');
 const Invoice = require('./Invoice');
+const CouponCategory = require('./CouponCategory');
 
 // 建立模型关联关系
 
@@ -112,6 +113,12 @@ ProductSpus.hasMany(ProductBrowseHistory, { foreignKey: 'spu_id', as: 'browseHis
 Coupon.hasMany(UserCoupon, { foreignKey: 'coupon_id', as: 'userCoupons' });
 UserCoupon.belongsTo(Coupon, { foreignKey: 'coupon_id', as: 'coupon' });
 
+// Coupon 和 CouponCategory 的关联 (#21)
+Coupon.hasMany(CouponCategory, { foreignKey: 'coupon_id', as: 'couponCategories' });
+CouponCategory.belongsTo(Coupon, { foreignKey: 'coupon_id', as: 'coupon' });
+CouponCategory.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
+Category.hasMany(CouponCategory, { foreignKey: 'category_id', as: 'couponCategories' });
+
 // AfterSale 和 AfterSaleLog 的关联
 AfterSale.hasMany(AfterSaleLog, { foreignKey: 'after_sale_id', as: 'logs' });
 AfterSaleLog.belongsTo(AfterSale, { foreignKey: 'after_sale_id', as: 'afterSale' });
@@ -122,6 +129,7 @@ module.exports = {
   Banner,
   Invoice,
   Coupon,
+  CouponCategory,
   UserCoupon,
   SystemConfig,
   ProductStockLog,
