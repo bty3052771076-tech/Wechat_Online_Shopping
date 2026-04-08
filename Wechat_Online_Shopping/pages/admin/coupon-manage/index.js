@@ -96,9 +96,25 @@ Page({
     this.setData({ [`formData.${field}`]: e.detail.value });
   },
 
-  // 分类多选框变化处理 (#21)
-  onCategoryChange(e) {
-    this.setData({ selectedCategoryIds: e.detail.value.map(Number) });
+  // Radio 单选处理 (#21)
+  onRadioChange(e) {
+    const { field, value } = e.currentTarget.dataset;
+    this.setData({ [`formData.${field}`]: String(value) });
+  },
+
+  // 分类单个复选框变化处理 (#21)
+  onCategoryCheckboxChange(e) {
+    const { value } = e.currentTarget.dataset;
+    const { checked } = e.detail;
+    let { selectedCategoryIds } = this.data;
+    if (checked) {
+      if (!selectedCategoryIds.includes(value)) {
+        selectedCategoryIds = [...selectedCategoryIds, value];
+      }
+    } else {
+      selectedCategoryIds = selectedCategoryIds.filter((id) => id !== value);
+    }
+    this.setData({ selectedCategoryIds });
   },
 
   onSave() {

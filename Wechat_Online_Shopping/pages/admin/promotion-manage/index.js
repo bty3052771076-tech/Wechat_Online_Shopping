@@ -69,6 +69,12 @@ Page({
     this.setData({ [`formData.${field}`]: e.detail.value });
   },
 
+  // Radio 单选处理
+  onRadioChange(e) {
+    const { field, value } = e.currentTarget.dataset;
+    this.setData({ [`formData.${field}`]: value });
+  },
+
   onSave() {
     const { formData, isAdd, editingId } = this.data;
     if (!formData.title.trim() || !formData.startTime || !formData.endTime) {

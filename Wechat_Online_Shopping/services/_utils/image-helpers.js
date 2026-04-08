@@ -54,6 +54,22 @@ const CATEGORY_PLACEHOLDER_MAP = {
   'muy-3b.png': '/assets/images/categories/fresh.png',
   'category-root.png': '/assets/images/categories/default.png',
   'category-child.png': '/assets/images/categories/default.png',
+  // 扩展分类图片映射 (#21 补图)
+  'food.png': '/assets/images/categories/food.png',
+  'digital.png': '/assets/images/categories/digital.png',
+  'baby.png': '/assets/images/categories/baby.png',
+  'dairy.png': '/assets/images/categories/dairy.png',
+  'grain.png': '/assets/images/categories/grain.png',
+  'storage.png': '/assets/images/categories/storage.png',
+  'oral.png': '/assets/images/categories/oral.png',
+  'hair.png': '/assets/images/categories/hair.png',
+  'snack.png': '/assets/images/categories/snack.png',
+  'drink.png': '/assets/images/categories/drink.png',
+  'instant.png': '/assets/images/categories/instant.png',
+  'phone-acc.png': '/assets/images/categories/phone-acc.png',
+  'appliance.png': '/assets/images/categories/appliance.png',
+  'baby-food.png': '/assets/images/categories/baby-food.png',
+  'baby-toy.png': '/assets/images/categories/baby-toy.png',
 };
 
 const BANNER_PLACEHOLDER_MAP = {
@@ -86,6 +102,22 @@ const CATEGORY_CODE_MAP = {
   BEAUTY_FACE: '/assets/images/categories/face.png',
   BEAUTY_BODY: '/assets/images/categories/body.png',
   BEAUTY_MAKEUP: '/assets/images/categories/makeup.png',
+  // 扩展分类 code 映射 (#21 补图)
+  CATEGORY_FOOD: '/assets/images/categories/food.png',
+  CATEGORY_DIGITAL: '/assets/images/categories/digital.png',
+  CATEGORY_BABY: '/assets/images/categories/baby.png',
+  FRESH_DAIRY: '/assets/images/categories/dairy.png',
+  FRESH_GRAIN: '/assets/images/categories/grain.png',
+  DAILY_STORAGE: '/assets/images/categories/storage.png',
+  BEAUTY_ORAL: '/assets/images/categories/oral.png',
+  BEAUTY_HAIR: '/assets/images/categories/hair.png',
+  FOOD_SNACK: '/assets/images/categories/snack.png',
+  FOOD_DRINK: '/assets/images/categories/drink.png',
+  FOOD_INSTANT: '/assets/images/categories/instant.png',
+  DIGITAL_PHONE_ACC: '/assets/images/categories/phone-acc.png',
+  DIGITAL_APPLIANCE: '/assets/images/categories/appliance.png',
+  BABY_FOOD: '/assets/images/categories/baby-food.png',
+  BABY_TOY: '/assets/images/categories/baby-toy.png',
 };
 
 const CATEGORY_NAME_MAP = {
@@ -101,6 +133,22 @@ const CATEGORY_NAME_MAP = {
   面部护理: CATEGORY_CODE_MAP.BEAUTY_FACE,
   身体护理: CATEGORY_CODE_MAP.BEAUTY_BODY,
   香水彩妆: CATEGORY_CODE_MAP.BEAUTY_MAKEUP,
+  // 扩展分类中文名映射 (#21 补图)
+  食品饮料: CATEGORY_CODE_MAP.CATEGORY_FOOD,
+  数码家电: CATEGORY_CODE_MAP.CATEGORY_DIGITAL,
+  母婴用品: CATEGORY_CODE_MAP.CATEGORY_BABY,
+  乳制品: CATEGORY_CODE_MAP.FRESH_DAIRY,
+  粮油干货: CATEGORY_CODE_MAP.FRESH_GRAIN,
+  收纳整理: CATEGORY_CODE_MAP.DAILY_STORAGE,
+  口腔护理: CATEGORY_CODE_MAP.BEAUTY_ORAL,
+  护发洗发: CATEGORY_CODE_MAP.BEAUTY_HAIR,
+  零食小吃: CATEGORY_CODE_MAP.FOOD_SNACK,
+  冲饮茶酒: CATEGORY_CODE_MAP.FOOD_DRINK,
+  方便速食: CATEGORY_CODE_MAP.FOOD_INSTANT,
+  手机配件: CATEGORY_CODE_MAP.DIGITAL_PHONE_ACC,
+  小家电: CATEGORY_CODE_MAP.DIGITAL_APPLIANCE,
+  婴儿食品: CATEGORY_CODE_MAP.BABY_FOOD,
+  玩具益智: CATEGORY_CODE_MAP.BABY_TOY,
 };
 
 function getHostname(raw) {

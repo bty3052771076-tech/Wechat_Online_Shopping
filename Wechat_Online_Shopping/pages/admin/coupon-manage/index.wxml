@@ -36,10 +36,10 @@
       </view>
       <view class="form-row">
         <text class="form-label">类型*</text>
-        <t-radio-group value="{{formData.couponType}}" data-field="couponType" bind:change="onFormInput">
-          <t-radio value="1">满减券</t-radio>
-          <t-radio value="2">折扣券</t-radio>
-        </t-radio-group>
+        <view class="radio-group">
+          <t-radio value="1" checked="{{formData.couponType === '1'}}" data-field="couponType" data-value="1" bind:change="onRadioChange">满减券</t-radio>
+          <t-radio value="2" checked="{{formData.couponType === '2'}}" data-field="couponType" data-value="2" bind:change="onRadioChange">折扣券</t-radio>
+        </view>
       </view>
       <view class="form-row">
         <text class="form-label">面值*</text>
@@ -69,9 +69,9 @@
       <view class="form-row">
         <text class="form-label">适用分类</text>
         <view class="form-hint">不选则全场通用</view>
-        <t-checkbox-group value="{{selectedCategoryIds}}" bind:change="onCategoryChange">
-          <t-checkbox wx:for="{{categoryOptions}}" wx:key="value" value="{{item.value}}">{{item.label}}</t-checkbox>
-        </t-checkbox-group>
+        <view class="checkbox-group">
+          <t-checkbox wx:for="{{categoryOptions}}" wx:key="value" value="{{item.value}}" checked="{{selectedCategoryIds.includes(item.value)}}" bind:change="onCategoryCheckboxChange" data-value="{{item.value}}">{{item.label}}</t-checkbox>
+        </view>
       </view>
       <view class="dialog-footer">
         <t-button variant="outline" bind:tap="onCancel">取消</t-button>

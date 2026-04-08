@@ -1,3 +1,5 @@
+const { normalizeImageUrl, IMAGE_SCENES } = require('./image-helpers');
+
 // 兜底静态图（API 失败时使用）
 const HOME_SWIPER_FALLBACK = [
   '/assets/images/banners/spring-sale.png',
@@ -13,7 +15,8 @@ function getCategoryName(category = {}) {
 // 若为空则降级到本地静态图
 function buildHomeSwiper(banners = []) {
   if (Array.isArray(banners) && banners.length > 0) {
-    return banners.map((b) => b.image_url || '').filter(Boolean);
+    // 对 banner URL 做归一化，将 example.com 等占位 URL 映射到本地资源
+    return banners.map((b) => normalizeImageUrl(b.image_url, IMAGE_SCENES.banner));
   }
   return HOME_SWIPER_FALLBACK.slice();
 }

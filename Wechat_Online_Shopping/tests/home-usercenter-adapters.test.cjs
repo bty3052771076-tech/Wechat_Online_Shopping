@@ -21,6 +21,20 @@ test('buildHomeSwiper uses reachable tdesign banner assets instead of retired CO
   assert.ok(swiper.every((item) => item.startsWith('/assets/images/banners/')));
 });
 
+test('buildHomeSwiper normalizes example.com banner URLs to local assets', () => {
+  const swiper = buildHomeSwiper([
+    { image_url: 'https://example.com/banners/spring-sale.jpg' },
+    { image_url: '/assets/images/banners/new-user.png' },
+    { image_url: '' },
+  ]);
+
+  assert.ok(swiper.every((item) => item.startsWith('/assets/images/')));
+  assert.equal(swiper[0], '/assets/images/banners/spring-sale.png');
+  assert.equal(swiper[1], '/assets/images/banners/new-user.png');
+  // 空 URL 降级到默认 banner
+  assert.equal(swiper[2], '/assets/images/banners/featured.png');
+});
+
 test('buildHomeTabs maps backend categories into real category tabs after curated tabs', () => {
   const tabs = buildHomeTabs([
     { id: 1, name: '生鲜食品' },

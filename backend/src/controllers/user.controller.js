@@ -19,8 +19,8 @@ class UserController {
       const user = await User.create({
         username,
         password,
-        phone,
-        email,
+        phone: phone || null,   // 空字符串转 null，避免 unique 约束冲突
+        email: email || null,
       });
 
       const token = jwt.sign(

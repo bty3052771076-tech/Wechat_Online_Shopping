@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { normalizeImageUrl } = require('../services/_utils/image-helpers');
+const { normalizeImageUrl, resolveCategoryImage } = require('../services/_utils/image-helpers');
 
 const PRODUCT_APPLE_IMAGE = '/assets/images/products/apple.png';
 const PRODUCT_CARROT_IMAGE = '/assets/images/products/carrot.png';
@@ -41,4 +41,23 @@ test('normalizeImageUrl replaces retired tdesign product URLs with packaged sema
     normalizeImageUrl('https://tdesign.gtimg.com/miniprogram/template/retail/goods/sp-1a.png', 'product'),
     PRODUCT_CARROT_IMAGE,
   );
+});
+
+// 扩展分类映射测试 (#21 补图)
+test('resolveCategoryImage resolves expanded top-level categories by code', () => {
+  assert.equal(resolveCategoryImage('', { category_code: 'CATEGORY_FOOD' }), '/assets/images/categories/food.png');
+  assert.equal(resolveCategoryImage('', { category_code: 'CATEGORY_DIGITAL' }), '/assets/images/categories/digital.png');
+  assert.equal(resolveCategoryImage('', { category_code: 'CATEGORY_BABY' }), '/assets/images/categories/baby.png');
+});
+
+test('resolveCategoryImage resolves expanded sub-categories by code', () => {
+  assert.equal(resolveCategoryImage('', { category_code: 'FOOD_SNACK' }), '/assets/images/categories/snack.png');
+  assert.equal(resolveCategoryImage('', { category_code: 'DIGITAL_APPLIANCE' }), '/assets/images/categories/appliance.png');
+  assert.equal(resolveCategoryImage('', { category_code: 'BABY_TOY' }), '/assets/images/categories/baby-toy.png');
+});
+
+test('resolveCategoryImage resolves expanded categories by Chinese name', () => {
+  assert.equal(resolveCategoryImage('', { name: '食品饮料' }), '/assets/images/categories/food.png');
+  assert.equal(resolveCategoryImage('', { name: '零食小吃' }), '/assets/images/categories/snack.png');
+  assert.equal(resolveCategoryImage('', { name: '母婴用品' }), '/assets/images/categories/baby.png');
 });

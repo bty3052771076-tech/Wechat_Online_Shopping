@@ -33,10 +33,10 @@
       </view>
       <view class="form-row">
         <text class="form-label">类型*</text>
-        <t-radio-group value="{{formData.promotionSubCode}}" data-field="promotionSubCode" bind:change="onFormInput">
-          <t-radio value="MYJ">满减</t-radio>
-          <t-radio value="MYG">满折</t-radio>
-        </t-radio-group>
+        <view class="radio-group">
+          <t-radio value="MYJ" checked="{{formData.promotionSubCode === 'MYJ'}}" data-field="promotionSubCode" data-value="MYJ" bind:change="onRadioChange">满减</t-radio>
+          <t-radio value="MYG" checked="{{formData.promotionSubCode === 'MYG'}}" data-field="promotionSubCode" data-value="MYG" bind:change="onRadioChange">满折</t-radio>
+        </view>
       </view>
       <view class="form-row">
         <text class="form-label">描述</text>

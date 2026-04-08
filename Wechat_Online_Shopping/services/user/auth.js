@@ -59,7 +59,7 @@ export function userRegister(userInfo) {
   return requestAuth('/users/register', {
     username: userInfo.username,
     password: userInfo.password,
-    phone: userInfo.phoneNumber || '',
-    email: userInfo.email || '',
+    phone: userInfo.phoneNumber || null,  // 空值传 null 避免 unique 约束冲突
+    email: userInfo.email || null,
   });
 }
