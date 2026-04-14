@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "weapp-dev": {
+      "command": "node",
+      "args": ["E:\\AI\\cc+glm\\tools\\weapp-dev-mcp\\node_modules\\@yfme\\weapp-dev-mcp\\dist\\index.js"],
+      "env": {
+        "WEAPP_WS_ENDPOINT": "ws://localhost:9420",
+        "WEAPP_AUTOMATOR_MODE": "connect"
+      }
+    }
+  }
+}
